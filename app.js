@@ -1,12 +1,22 @@
+/*
+* module dependencies
+*/
+
+// config
+var config = require('./config');
+
 var express = require('express');
 var path = require('path');
+var Loader = require('loader');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
 
@@ -19,11 +29,22 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+app.use(cookieParser(config.session_secret));
+app.use(session({
+  secret: config.session_secret,
+  store: new MongoStore({
+    url: config.db
+  }),
+  resave: true,
+  saveUninitialized: true,
+}));
+
+
+// routes
 app.use('/', routes);
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -31,6 +52,13 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+//development,自动重启应用
+app.listen(config.port,function(req,res){
+   console.log("%s listening on port %d in %s mode",config.name, config.port, app.settings.env);
+  console.log("God bless love....");
+  console.log("You can debug your app with http://" + config.hostname + ':' + config.port);
+})
 
 // error handlers
 

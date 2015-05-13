@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var path = require('path');
+var fs = require('fs');
+
+fs.readFile(path.join(__dirname, '../config.default.js'),function(err,data){
+	if(err) throw err;
+
+	// 创建config文件，写入默认数据
+	fs.open(path.join(__dirname, '../config.js'),'w',function(err,fd){
+		if(err) throw err;
+
+		fs.write(fd,data,0,data.length,function(err){
+			if(err) throw err;
+
+			console.log('基本配置成功');
+		})
+	})
+});
