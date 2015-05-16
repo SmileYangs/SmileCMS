@@ -4,14 +4,128 @@
 		<h2>Dashboard</h2>
 	</div>
 	<div id="dash_sys_state">
-		
+		<div class="all_state">
+			<div class="state_con">
+				<div>
+					<h2><i class="fa fa-book"></i>文章统计</h2>
+					<ul class="now_state">
+						<li>
+							<span>文章总数</span>
+							<span class="count">200</span>
+						</li>
+						<li>
+							<span>热门文章</span>
+							<span class="count">50</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="state_con">
+				<div>
+					<h2><i class="fa fa-file-text"></i>分类统计</h2>
+					<ul class="now_state">
+						<li>
+							<span>分类总数</span>
+							<span class="count">200</span>
+						</li>
+						<li>
+							<span>热门分类</span>
+							<span class="count">50</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="state_con">
+				<div>
+					<h2><i class="fa fa-users"></i>用户统计</h2>
+					<ul class="now_state">
+						<li>
+							<span>用户总数</span>
+							<span class="count">200</span>
+						</li>
+						<li>
+							<span>活跃用户</span>
+							<span class="count">50</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="state_con">
+				<div>
+					<h2><i class="fa fa-tasks"></i>任务统计</h2>
+					<ul class="now_state">
+						<li>
+							<span>任务总数</span>
+							<span class="count">200</span>
+						</li>
+						<li>
+							<span>已完成</span>
+							<span class="count">50</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="system_setting">
+			<div id="todo_con">
+				<h2><i class="fa fa-tasks"></i>TodoList</h2>
+					<div class="content">
+						<div id="create-todo">
+							<input id="new-todo" placeholder="接下来需要做些什么呢?" type="text" />
+							<span class="ui-tooltip-top" style="display:none;">要做这个吗？按下回车就可以保存这个任务啦~</span>
+							<div class="todo_all">
+								<input class="check mark-all-done" name="check-all" type="checkbox"/>
+								<label for="check-all">标记全部</label>
+							</div>
+						</div>
+						<div class="content_con">
+							<div id="todos">
+								<ul id="todo-list"></ul>
+							</div>
+						</div>
+					</div>
+				<div id="todo-stats"></div>
+			</div>
+		</div>
 	</div>
+</script>
+
+<!-- 任务管理模板 -->
+<!-- Templates -->
+<script type="text/template" id="item-template">
+	<div class="todo{{if done}} done{{/if}}">
+		<div class="display">
+			<input id="${id}" class="check" type="checkbox" {{if done}} checked="checked"{{/if}}/>
+			<label for="${id}" class="todo-content">${content}</label>
+			<span class="todo-destroy fa fa-times-circle"></span>
+		</div>
+		<div class="edit">
+			<input class="todo-input" type="text" value="${content}" />
+		</div>
+	</div>
+</script>
+
+<script type="text/template" id="stats-template">
+	{{if total}}
+		<span class="todo-count">
+			<span class="number">${remaining}</span>
+			<span class="word">条任务</span> 未完成.
+		</span>
+	{{/if}}
+	{{if done}}
+		<span class="todo-clear">
+			<a href="#">
+				清除 <span class="number-done">${done}</span>
+				条已完成的 <span class="word-done">任务</span>
+			</a>
+		</span>
+	{{/if}}
 </script>
 
 <!-- 知识管理模板 -->
 <script id="knowledge-template" type="text/template">
 	<div class="page_head">
-		<h2>知识管理</h2>
+		<h2>文章管理</h2>
 		<ul class="admin_operate">
 			<li><a class="knowledge_add"><i class="fa fa-plus"></i>新增</a></li>
 		</ul>
@@ -37,23 +151,10 @@
 <!-- 任务管理模板 -->
 <script id="work-template" type="text/template">
 	<div class="page_head">
-		<h2>任务管理</h2>
-		<ul class="admin_operate">
-			<li><a class="work_add"><i class="fa fa-plus"></i>新增</a></li>
-		</ul>
+		<h2>评论管理</h2>
 	</div>
 	<div id="work_view">
 		<ul class="work_list"></ul>
-	</div>
-</script>
-
-<!-- 控制台模板 -->
-<script id="system-template" type="text/template">
-	<div class="page_head">
-		<h2>系统设置</h2>
-	</div>
-	<div id="system_setting">
-		
 	</div>
 </script>
 
@@ -118,7 +219,7 @@
     <div class="dialog edit_category">
     	<div class="dialog_header">
     		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
-    		<h2>新增分类</h2>
+    		<h2>编辑分类</h2>
     	</div>
     	<div class="dialog_body">
            <form name='edit_category'>
