@@ -1,0 +1,139 @@
+<!-- 控制台模板 -->
+<script id="dashboard-template" type="text/template">
+	<div class="page_head">
+		<h2>Dashboard</h2>
+	</div>
+	<div id="dash_sys_state">
+		
+	</div>
+</script>
+
+<!-- 知识管理模板 -->
+<script id="knowledge-template" type="text/template">
+	<div class="page_head">
+		<h2>知识管理</h2>
+		<ul class="admin_operate">
+			<li><a class="knowledge_add"><i class="fa fa-plus"></i>新增</a></li>
+		</ul>
+	</div>
+	<div id="knowledge_view">
+		<ul class="knowledge_list"></ul>
+	</div>
+</script>
+
+<!-- 用户管理模板 -->
+<script id="user-template" type="text/template">
+	<div class="page_head">
+		<h2>用户管理</h2>
+		<ul class="admin_operate">
+			<li><a class="user_add"><i class="fa fa-plus"></i>新增</a></li>
+		</ul>
+	</div>
+	<div id="user_view">
+		<ul class="user_list"></ul>
+	</div>
+</script>
+
+<!-- 任务管理模板 -->
+<script id="work-template" type="text/template">
+	<div class="page_head">
+		<h2>任务管理</h2>
+		<ul class="admin_operate">
+			<li><a class="work_add"><i class="fa fa-plus"></i>新增</a></li>
+		</ul>
+	</div>
+	<div id="work_view">
+		<ul class="work_list"></ul>
+	</div>
+</script>
+
+<!-- 控制台模板 -->
+<script id="system-template" type="text/template">
+	<div class="page_head">
+		<h2>系统设置</h2>
+	</div>
+	<div id="system_setting">
+		
+	</div>
+</script>
+
+<!-- 分类管理模板 -->
+<script id="category-template" type="text/template">
+	<div class="page_head">
+		<h2>分类管理</h2>
+		<ul class="admin_operate">
+			<li><a class="category_add"><i class="fa fa-plus"></i>新增</a></li>
+		</ul>
+	</div>
+	<div id="category_view">
+		<ul class="category_list"></ul>
+	</div>
+</script>
+
+<script id="category-item-template" type="text/template">
+	<div class="category">
+		<div class="category_display">
+			<h2>${title}</h2>
+			<ul class="category_state">
+				<li>订阅总数：${sub_count}</li>
+				<li>知识总数：${knowledge_count}</li>
+			</ul>
+			<ul class="admin_operate">
+				<li><a class="category_toggle"><i class="fa fa-folder"></i><span>展开</span></a></li>
+				<li><a class="category_edit"><i class="fa fa-pencil"></i>编辑</a></li>
+				<li><a class="category_delete"><i class="fa fa-minus"></i>删除</a></li>
+			</ul>
+		</div>
+		<div class="category_desc">
+			<p>${description}</p>
+		</div>
+	</div>
+</script>
+
+<script id="noCat-template" type="text/template">
+	<div class="no_data">
+		<i class="fa fa-frown-o"></i>
+		<p>暂时还没有分类信息！点击右上角 新增 按钮即可添加！</p>
+	</div>
+</script>
+
+<!-- 弹窗模板 -->
+<script id="dialog-template" type="text/template">
+    <div class="dialog add_category">
+    	<div class="dialog_header">
+    		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+    		<h2>新增分类</h2>
+    	</div>
+    	<div class="dialog_body">
+           <form name='add_category'>
+           	<div class="error">&nbsp;</div>
+   	        <ul>
+   	            <li><label>分类标题:</label><input class="require" id="category_title" name='title' type="text"/></li>
+   	            <li><label>分类描述:</label><textarea id="category_desc" rows="3" cols="20" name="description"></textarea></li>
+   	        </ul>
+           	<p><a class="submit" id='btn_add_category'>确认添加</a></p>
+          	</form>
+    	</div>
+    </div>
+    <div class="dialog edit_category">
+    	<div class="dialog_header">
+    		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+    		<h2>新增分类</h2>
+    	</div>
+    	<div class="dialog_body">
+           <form name='edit_category'>
+           	<div class="error">&nbsp;</div>
+   	        <ul>
+   	            <li><label>分类标题:</label><input class="require" id="edit_category_title" name='title' type="text"/></li>
+   	            <li><label>分类描述:</label><textarea id="edit_category_desc" rows="3" cols="20" name="description"></textarea></li>
+   	        </ul>
+           	<p><a class="submit" id='btn_edit_category'>确认修改</a></p>
+          	</form>
+    	</div>
+    </div>
+    <div class="dialog action-tips">
+    </div>
+    <div class="dialog upload">
+    </div>
+    <div class="dialog_bg"></div>
+</script>

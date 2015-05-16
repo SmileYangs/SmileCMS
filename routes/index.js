@@ -1,12 +1,22 @@
 var express = require('express');
 var admin = require('../controllers/admin');
 //var admin = require('../controllers/sign');
+var user = require('../controllers/user');
+var category = require('../controllers/category');
 var router = express.Router();
+var auth = require('../middlewares/auth');
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'SmileCMS' });
 });
+
+/* category controller */
+router.get('/admin/category',category.index);
+router.post('/admin/category',category.create);
+router.put('/admin/category/:id',category.update);
+router.delete('/admin/category/:id',category.delete);
 
 // sign controller
 // if (config.allow_sign_up) {
@@ -21,12 +31,12 @@ router.get('/', function(req, res, next) {
 
 
 /*router of admin*/
+// router.get('/admin',auth.adminRequired,admin.index);
 router.get('/admin',admin.index);
 
-/* GET users listing. */
-router.get('/users', function(req, res, next) {
-  res.send('respond with a resource  one router');
+/*router of some test*/
+router.get('/poptest',function(req,res){
+	res.render('components/pop_demo');
 });
-
 
 module.exports = router;

@@ -1,0 +1,70 @@
+html,body {
+	padding: 0;
+	margin: 0;
+	font-family: "微软雅黑";
+	background: #FCFCFD;
+}
+
+h1 {
+	padding: 0;
+	margin: 0;
+}
+/* 登录页面*/
+#login_content {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	min-width: 100%;
+	min-height: 100%;
+	background: #273238;
+}
+
+#login_content .login_card {
+	display: block;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	height: 300px;
+	width: 500px;
+	margin-left: -250px;
+	margin-top: -150px;
+}
+
+#login_content .logo {
+	color: #fff;
+	margin: 10px 0;
+	text-align: left;
+}
+
+.login_form label {
+	color: #e5e8ef;
+	margin-bottom: 5px;
+	font-size: 12px;
+	font-weight: bold;
+}
+.login_form input {
+	width: 100%;
+	box-sizing: border-box;
+	height: 35px;
+}
+
+.login_form input[type="text"], .login_form input[type="password"] {
+	background: #e5e8ef;
+	border-radius: 5px;
+	padding: 2px 5px;
+}
+
+.login_form .submit {
+	display: block;
+	background: #fe5722;
+	border: none;
+	color: #fff;
+	margin: 15px auto;
+	border-radius: 5px;
+	height: 46px;
+	font-family: "Microsoft YaHei";
+	letter-spacing: 6px;
+	font-size: 14px;
+}
+
+

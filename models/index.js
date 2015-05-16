@@ -10,5 +10,9 @@ mongoose.connect(config.db, function (err) {
 
 //models
 require('./user');
+require('./category');
+require('./knowledge');
 
 exports.User = mongoose.model('User');
+exports.Category = mongoose.model('Category');
+exports.Knowledge = mongoose.model('Knowledge');
