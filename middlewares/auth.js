@@ -16,7 +16,7 @@ exports.adminRequired = function (req, res, next) {
       "keywords": config.keywords
     });
   }
-  if (!req.session.user.is_admin) {
+  if (!req.session.user.is_star) {
     return res.render('sign/sign_in', {
       "error": '您无权访问该页面，请先登录',
       "title": config.name,
@@ -37,7 +37,10 @@ exports.userRequired = function (req, res, next) {
   next();
 };
 
-function gen_session(user, res) {
+
+function gen_session(req,user, res){
+  req.session.user = user;
+
   var auth_token = user._id + '$$$$'; // 以后可能会存储更多信息，用 $$$$ 来分隔
   res.cookie(config.auth_cookie_name, auth_token,
     {path: '/', maxAge: 1000 * 60 * 60 * 24 * 30, signed: true, httpOnly: true}); //cookie 有效期30天

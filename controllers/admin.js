@@ -7,6 +7,15 @@ var admin = {
 			"description": config.description,
 			"keywords": config.keywords
 		});
+	},
+
+	showLogin: function(req,res){
+		res.render('sign/sign_in', {
+			"error": "",
+			"title": config.name,
+			"description": config.description,
+			"keywords": config.keywords
+		});
 	}
 }
 
@@ -14,5 +23,4 @@ var admin = {
 
 // controllers admin
 module.exports = admin;
-
 

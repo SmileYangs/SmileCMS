@@ -16,6 +16,7 @@ var config = {
 	port: 3333,
 
 	session_secret: 'SmileCMS_own_secret', //密钥
+	auth_cookie_name: 'SmileCMS_own_secret',
 
 	// 文件上传配置
 	upload: {

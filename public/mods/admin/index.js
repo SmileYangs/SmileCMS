@@ -26,7 +26,7 @@ $(function(){
 					case "description" : name = "分类描述"; break;
 				}
 				if(attr[k] == "" && (k === "title" || k === "description") ){
-					console.log(k);
+					
 					return name + "不能为空";
 				}
 			}
@@ -179,7 +179,6 @@ $(function(){
 		model: Todo,
 		//获取所有已经完成的任务数目
 		parse: function(data){
-			console.log(data);
 
 			return data.todos;
 		},
@@ -293,7 +292,6 @@ $(function(){
 			var done = Todos.done().length;
 			var remaining = Todos.remaining().length;
 
-			console.log(done,remaining);
 
 			$(this.el).find('#todo-stats').html($.tmpl(this.template,{
 				total:      Todos.length,
@@ -360,6 +358,158 @@ $(function(){
 	});
 
 	/*
+	* 用户管理部分
+	*/
+	var UserModel = Backbone.Model.extend({
+		urlRoot: url + '/user',
+		defaults: {
+			username: null,
+			password: null
+		},
+
+		parse: function(data){
+			data = data.action ? data.user : data;
+
+			data.id = data._id ? data._id : "";
+			return data;
+		},
+
+		initialize: function(){
+			this.on('request',function(req,xhr){
+				xhr.error(function(res){
+					var err = $.parseJSON(res.responseText);
+										
+					$(err.parent + " .error").html(err.error).css({
+						display : "block"
+					});
+
+				}).success(function(res){
+					$(".add_user .error").empty().hide();
+
+					DialogState.tips({
+						title: res.tips.title,
+						msg: res.tips.msg,
+						action: "",
+						canclose: true,
+						actionTips: "我知道了"
+					});
+
+					if(res.action === "add"){
+						Users.add(res.user);
+					} 
+
+					if(res.action === "update"){
+						var user = Users.get(res.user._id);
+						user.set(res.user);
+					}
+				})
+			})
+		},
+		validate : function(attr,option){
+			for(k in attr){
+				var name = "";
+				switch(k){
+					case "username" : name = "用户名"; break;
+					case "password" : name = "密码"; break;
+					case "rep_pass" : name = "确认密码"; break;
+					case "email" : name = "邮箱"; break;
+				}
+				if((k == "rep_pass" || k == "username" || k == "password" || k == "email") && attr[k] == ""){
+					return name + "不能为空";
+				} else if(k == "username" && attr[k] != null && !attr[k].match(/^(\w){1,16}$/)){
+					return name + "不符合规范";
+				} else if(k == "rep_pass" && attr[k] != null && !(attr[k] == attr['password'])){
+					return "两次输入的密码不一致";
+				}  
+			}
+		},
+
+		remove: function(){
+			this.destroy();
+		}
+	});
+
+	var UserList = Backbone.Collection.extend({
+		url: url + '/user',
+		model: UserModel,
+
+		parse: function(data){
+			this.originData = data;
+
+			return data.users;
+		}
+	});
+
+	var UserView = Backbone.View.extend({
+	  	tagName: "li",
+	  	template: $("#user-item-template").template(),
+
+	  	events: {
+			"click .user_edit": "edit",
+			"click .user_delete": "clear"
+	  	},
+
+	  	initialize: function(){
+	  		_.bindAll(this,'render','remove','edit');
+	  		this.model.bind('change', this.render);
+	  		this.model.bind('destroy', this.remove);
+	  	},
+
+	  	edit: function(){
+	  		DialogState.editUser(this.model.toJSON());
+	  	},
+
+	  	render: function(){
+	  		this.$el.html($.tmpl(this.template,this.model.toJSON()));
+	  		return this;
+	  	},
+
+	  	clear: function(){
+	  		this.model.remove();
+	  	}
+	});
+
+	var UserListView = Backbone.View.extend({
+		el: "#user_view",
+		initialize: function(){
+			_.bindAll(this, 'addOne', 'addAll', 'render');
+
+			Users.bind('add',this.addOne);
+			Users.bind('reset',this.addAll);
+			
+			Users.fetch({reset: true});
+
+		},
+
+		addOne: function(user){
+
+			var view = new UserView({model: user});
+			this.$(".user_list").append(view.render().el);
+		},
+
+		addAll: function(){
+			this.$(".user_list").html('');
+			Users.each(this.addOne);
+		}
+	});
+
+	var UserConView = Backbone.View.extend({
+		el: "#admin_right",
+		template: $("#user-template").template(),
+
+		events: {
+			"click .user_add": "addUser"
+		},
+
+		addUser: function(){
+			DialogState.addUser();
+		},
+
+		render: function(){
+			this.$el.html($.tmpl(this.template));
+		}
+	});
+	/*
 	*	公共部分
 	*/
 
@@ -414,7 +564,16 @@ $(function(){
 		},
 
 		adminOut: function(e){
-			console.log("adminout");
+			$.ajax({
+				url: url + '/signout',
+				type: "post",
+				error: function(){
+
+				},
+				success: function(){
+					window.location.href = url + '/login';
+				}
+			})
 		},
 
 		search: function(e){
@@ -440,6 +599,9 @@ $(function(){
 		events: [
 			{name: "addCategory",from: "*",to: "*"},
 			{name: "editCategory",from: "*",to: "*"},
+			{name: "addUser",from: "*",to: "*"},
+			{name: "tips",from:"",to:""},
+			{name: "editUser",from: "*",to: "*"},
 			{name: "exit",from: "*",to: "*"}
 		],
 		callbacks:{
@@ -455,6 +617,26 @@ $(function(){
 				$("#edit_category_title").val(data.title);
 				$("#edit_category_desc").val(data.description);
     			$(".edit_category").center().show();
+			},
+			onaddUser: function(){
+				$(".add_user .error").empty().hide();
+				$(".add_user input").val('');
+
+    			$(".add_user").center().show();
+			},
+			oneditUser: function(a,b,c,data){
+				$(".edit_user .error").empty().hide();
+				$(".edit_user").attr('data_id',data.id);
+				$("#edit_username").val(data.username);
+				$("#edit_user_email").val(data.email);
+				$("#edit_user_nick").val(data.nickname);
+				$("#edit_user_sign").val(data.signature);
+
+    			$(".edit_user").center().show();
+			},
+			ontips: function(a,b,c,data){
+				var template = $("#dialog-tips-template").template();
+				$(".action-tips").html($.tmpl(template,data)).center().show();
 			},
 			onexit: function(e){
 				$(".dialog_bg").hide();
@@ -478,9 +660,10 @@ $(function(){
 		template: $("#dialog-template").template(),
 		events: {
 			"click .close"				: "close",
-			"click .dialog_bg"			: "close",
 			"click #btn_add_category"   : "addCategory",
-			"click #btn_edit_category"  : "editCategory"
+			"click #btn_edit_category"  : "editCategory",
+			"click #btn_add_user"   	: "addUser",
+			"click #btn_edit_user"   	: "editUser",
 		},
 		close: function(e){
 			e.preventDefault();
@@ -521,11 +704,55 @@ $(function(){
 				});
 				return false;
 			}
-			console.log(category);
+			
 			category.save();
 			DialogState.exit();
 		},
+		addUser: function(){
+			var attr = {
+				username: $.trim($("#username").val()),
+				password: $.trim($("#user_pass").val()),
+				rep_pass: $.trim($("#user_pass_comfirm").val()),
+				email: $.trim($("#user_email").val()),
+				nickname: $.trim($("#user_nick").val()),
+				signature: $.trim($("#user_sign").val())
+			};
 
+			var user = new UserModel(attr);
+			if(!user.isValid()){
+				$(".add_user .error").html(user.validationError).css({
+					display : "block"
+				});
+				return false;
+			}
+
+			Users.create(attr,{wait:true})
+		},
+
+		editUser: function(){
+			var attr = {
+				username: $.trim($("#edit_username").val()),
+				email: $.trim($("#edit_user_email").val()),
+				nickname: $.trim($("#edit_user_nick").val()),
+				signature: $.trim($("#edit_user_sign").val())
+			};
+
+			
+
+			var user = new UserModel(attr);
+
+			if(!user.isValid()){
+				$(".edit_user .error").html(user.validationError).css({
+					display : "block"
+				});
+				return false;
+			}
+
+			user = Users.get($(".edit_user").attr('data_id'));
+
+			user.save(attr,{wait: true});
+
+		},
 		initialize: function(){
 			this.render();
 		}
@@ -543,15 +770,6 @@ $(function(){
 	var KnowledgeConView = Backbone.View.extend({
 		el: "#admin_right",
 		template: $("#knowledge-template").template(),
-
-		render: function(){
-			this.$el.html($.tmpl(this.template));
-		}
-	});
-
-	var UserConView = Backbone.View.extend({
-		el: "#admin_right",
-		template: $("#user-template").template(),
 
 		render: function(){
 			this.$el.html($.tmpl(this.template));
@@ -581,6 +799,7 @@ $(function(){
 			window.Menu = new MenuModel();
 			window.Categorys = new CategoryList();
 			window.Todos = new TodoList();
+			window.Users = new UserList();
 
 			new NavView();
 			new HeadView();
@@ -611,7 +830,7 @@ $(function(){
 			var self = this;
 			Menu.set({current: 'category'});
 			self.categoryConControl.render();
-			
+
 			new CategoryListView();
 		},
 
@@ -619,6 +838,8 @@ $(function(){
 			var self = this;
 			Menu.set({current: 'user'});
 			self.userConControl.render();
+
+			new UserListView();
 		},
 
 		work: function(){

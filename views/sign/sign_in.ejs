@@ -2,6 +2,10 @@
 	<div id="login_content">
 		<div class="login_card">
 			<h1 class="logo">SmileCMS 系统登录</h1>
+				
+			<% if (error) { %>
+				<p class="err"><%= error%></p> 
+			<% } %>
 			<form class="login_form" action="">
 				<label for="name">用户名</label>
 				<input type="text" name="name" id="name">
@@ -11,9 +15,42 @@
 			</form>
 		</div>
 	</div>
-<% include ../footer_admin %>
+<% include ../footer %>
 
 <script type="text/javascript">
-	
+	$(function(){
+		var login = {
+			form: $('.login_form'),
+			init: function(){
+				this.bindEvent();
+			},
+
+			bindEvent: function(){
+				var self = this;
+
+				self.form.submit(function(e){
+					e.preventDefault();
+
+					var data = $(this).serializeArray();
+
+					$.ajax({
+						type: "post",
+						url: "/signin",
+						data: data,
+						dataType: 'json',
+						error: function(err){
+							err = $.parseJSON(err.responseText);
+							$('.err').html(err.error);
+						},
+						success: function(res){
+							window.location.href = '/admin';
+						}
+					})
+				})
+			}
+		}
+
+		login.init();
+	})
 </script>
 

@@ -60,7 +60,7 @@ a img {
 	text-shadow:@arguments;
 }
 .opcity(@a:0.5,@b:#000){
-	background:#000;
+	background:@b;
 	-moz-opacity:@a;
 	-khtml-opacity: @a;
 	opacity: @a;
@@ -398,8 +398,8 @@ p {
 		}
 	}
 
-	#category_view {
-		.category_list {
+	#category_view, #user_view {
+		.category_list, .user_list {
 			width: 100%;
 
 			.no_data {
@@ -418,8 +418,8 @@ p {
 			}
 		}
 
-		.category {
-			.category_display {
+		.category, .user {
+			.category_display, .user_display {
 				height: 50px;
 				background: #F3F3F3;
 				border: 1px solid #DDDEE1;
@@ -470,6 +470,8 @@ p {
 			}
 		}
 	}
+
+	/**/
 }
 
 /* dashboard */
@@ -920,11 +922,18 @@ p {
 		color: #fff;
 		top: 50%;
 		margin-top: -12px;
+		padding: 0 2px;
 	}
 	.btn-close-tips {
 		.btn;
 		position: static;
-		width: 422px;
+		width: 100%;
+		margin: 0 0 10px;
+		font-size: 15px;
+		font-weight: normal;
+		letter-spacing: 1px;
+		padding: 5px 0;
+		.opcity(1,#4463c7);
 	}
 
 	.dialog_header {
@@ -972,7 +981,7 @@ p {
 				.bold;
 				margin-right:10px;
 			}
-			input[type=text],input[type=password]{
+			input[type=text],input[type=password],input[type=email]{
 				.border(@grey_line);
 				padding:5px;
 				height:30px;
@@ -1114,6 +1123,18 @@ p {
 				font-size:15px;
 			}
 		}
+	}
+}
+
+.add_user {
+	form>div {
+		&.error {
+			margin-bottom: 10px;
+		}
+	}
+	
+	ul li {
+		margin: -3px 0;
 	}
 }
 

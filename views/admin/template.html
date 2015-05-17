@@ -148,6 +148,19 @@
 	</div>
 </script>
 
+<script id="user-item-template" type="text/template">
+	<div class="user">
+		<div class="user_display">
+			<h2>${username}</h2>
+			<ul class="admin_operate">
+				<li><a class="user_edit"><i class="fa fa-pencil"></i>编辑</a></li>
+				{{if !is_star}}<li><a class="user_delete"><i class="fa fa-minus"></i>删除</a></li>{{/if}}
+			</ul>
+		</div>
+	</div>
+</script>
+
+
 <!-- 任务管理模板 -->
 <script id="work-template" type="text/template">
 	<div class="page_head">
@@ -232,9 +245,61 @@
           	</form>
     	</div>
     </div>
+    <div class="dialog add_user">
+     	<div class="dialog_header">
+     		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+     		<h2>添加用户</h2>
+     	</div>
+     	<div class="dialog_body">
+            <form name='add_user'>
+            	<div class="error">&nbsp;</div>
+    	        <ul>
+    	            <li><label>登录名:</label><input class="require" id="username" type="text"/></li>
+    	            <li><label>密码:</label><input class="require" type="password" id="user_pass"></li>
+    	            <li><label>密码确认:</label><input class="require" type="password" id="user_pass_comfirm"></li>
+    	            <li><label>邮箱:</label><input class="require" type="email" id="user_email"></li>
+    	            <li><label>昵称:</label><input class="require" id="user_nick" type="text"/></li>
+    	            <li><label>签名:</label><input class="require" id="user_sign" type="text"/></li>
+    	        </ul>
+            	<p><a class="submit" id='btn_add_user'>确认添加</a></p>
+           	</form>
+     	</div>
+    </div>
+    <div class="dialog edit_user">
+     	<div class="dialog_header">
+     		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+     		<h2>编辑用户</h2>
+     	</div>
+     	<div class="dialog_body">
+            <form name='edit_user'>
+            	<div class="error">&nbsp;</div>
+    	        <ul>
+    	            <li><label>登录名:</label><input class="require" id="edit_username" type="text"/></li>
+    	            <li><label>邮箱:</label><input class="require" type="email" id="edit_user_email"></li>
+    	            <li><label>昵称:</label><input class="require" id="edit_user_nick" type="text"/></li>
+    	            <li><label>签名:</label><input class="require" id="edit_user_sign" type="text"/></li>
+    	        </ul>
+            	<p><a class="submit" id='btn_edit_user'>确认修改</a></p>
+           	</form>
+     	</div>
+    </div>
     <div class="dialog action-tips">
     </div>
     <div class="dialog upload">
     </div>
     <div class="dialog_bg"></div>
+</script>
+
+<script id="dialog-tips-template" type="text/template">
+	<div class="dialog_header">
+		{{if canclose}}
+		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+		{{/if}}
+		<h2>${title}</h2>
+	</div>
+	<div class="dialog_body">
+		<p>${msg}</p>
+		<p class="${action}"><a class="close btn-close-tips ${action}" href="#">${actionTips}</a></p>
+	</div>
+	
 </script>
