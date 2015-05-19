@@ -135,6 +135,38 @@
 	</div>
 </script>
 
+<script id="knowledge-item-template" type="text/template">
+	<div class="knowledge">
+		<div class="knowledge_display">
+			<div class="knowledge_header">
+				<h2>${title}</h2>
+				<p class="knowledge_state">
+					${friendly_create_at}
+					<span>
+						<i>${category.title}</i>
+						${visit_count}<i class="fa fa-eye"></i>
+					</span>
+				</p>
+			</div>
+			<div class="content">
+				${content}
+			</div>
+			<ul class="admin_operate">
+				<li><a class="knowledge_edit"><i class="fa fa-pencil"></i>编辑</a></li>
+				<li><a class="knowledge_delete"><i class="fa fa-minus"></i>删除</a></li>
+			</ul>
+		</div>
+	</div>
+</script>
+
+<script id="category-list-template" type="text/template">
+	<select id="${type}_category_select">
+		{{each(i,cat) cats}}
+			<option value="${cat._id}">${cat.title}</option>
+		{{/each}}
+	</select>
+</script>
+
 <!-- 用户管理模板 -->
 <script id="user-template" type="text/template">
 	<div class="page_head">
@@ -283,6 +315,49 @@
            	</form>
      	</div>
     </div>
+
+    <div class="dialog add_knowledge"> 
+	 	<div class="dialog_header">
+	 		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+	 		<h2>添加文章</h2>
+	 	</div>
+	 	<div class="dialog_body">
+	        <form name='add_knowledge'>
+	        	<div class="error">&nbsp;</div>
+		        <ul>
+		            <li class="title"><label>文章标题:</label><input class="require" id="knowledge_title" placeholder="吉他就要这样弹" type="text"/></li>
+		            <li class="category"><label>文章分类:</label>
+		            </li>
+		          	<li><label>文章正文:</label><textarea placeholder="吉他要怎么弹呢？" id="knowledge_content" rows="3" cols="20"></textarea></li>
+		        </ul>
+	        	<p>
+	        		<a class="submit" id='btn_add_knowledge'>确认添加</a>
+	        		<a class="submit_pub" id='btn_publish_knowledge'>立即发布</a>
+	        	</p>
+	       	</form>
+	 	</div>	
+    </div>
+    <div class="dialog edit_knowledge"> 
+	 	<div class="dialog_header">
+	 		<a class="close" href="javascript:"><i class="fa fa-times-circle"></i></a>
+	 		<h2>修改文章</h2>
+	 	</div>
+	 	<div class="dialog_body">
+	        <form name='edit_knowledge'>
+	        	<div class="error">&nbsp;</div>
+		        <ul>
+		            <li class="title"><label>文章标题:</label><input class="require" id="edit_knowledge_title" type="text"/></li>
+		            <li class="category"><label>文章分类:</label>
+		            </li>
+		          	<li><label>文章正文:</label><textarea placeholder="吉他要怎么弹呢？" id="edit_knowledge_content" rows="3" cols="20"></textarea></li>
+		        </ul>
+	        	<p>
+	        		<a class="submit" id='btn_edit_knowledge'>确认修改</a>
+	        		<a class="submit_pub" id='btn_publish_knowledge'>立即发布</a>
+	        	</p>
+	       	</form>
+	 	</div>	
+    </div>
     <div class="dialog action-tips">
     </div>
     <div class="dialog upload">
@@ -299,7 +374,7 @@
 	</div>
 	<div class="dialog_body">
 		<p>${msg}</p>
-		<p class="${action}"><a class="close btn-close-tips ${action}" href="#">${actionTips}</a></p>
+		<p class="${action}"><a class="close btn-close-tips" href="#">${actionTips}</a></p>
 	</div>
 	
 </script>

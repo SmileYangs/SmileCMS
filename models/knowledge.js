@@ -9,11 +9,11 @@ var KnowledgeSchema = new Schema({
 	visit_count: {type: Number, default: 0},
 	create_at: {type: Date, default: Date.now },
  	update_at: {type: Date, default: Date.now },
- 	category_ids: [{type: ObjectId}],
+ 	category_id: {type: ObjectId},
  	last_reply: { type: ObjectId },
   	last_reply_at: { type: Date, default: Date.now },
  	collect_count: {type: Number, default: 0},
- 	content_is_html: {type: Boolean}
+ 	publish: {type: Boolean, default: false}
 });
 
 KnowledgeSchema.index({create_at: -1});

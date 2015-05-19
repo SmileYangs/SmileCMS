@@ -42,9 +42,6 @@ $(function(){
     	url: url + "/category",
     	model: CategoryModel,
     	parse: function(data) {
-    		// 将原始数据挂载到categorylist上
-           	this.originData = data;
-
 		   	return data.categorys;
 		}
     });
@@ -104,7 +101,18 @@ $(function(){
 			Categorys.bind('add',this.addOne);
 			Categorys.bind('reset',this.addAll);
 			
-			Categorys.fetch({reset: true});
+			Categorys.fetch({
+				reset: true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "加载中...",
+						msg: "正在加载数据，请稍后！",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
 
 		},
 
@@ -114,6 +122,7 @@ $(function(){
 		},
 
 		addAll: function(){
+			DialogState.exit();
 			this.$(".category_list").html('');
 			Categorys.each(this.addOne);
 		}
@@ -477,7 +486,18 @@ $(function(){
 			Users.bind('add',this.addOne);
 			Users.bind('reset',this.addAll);
 			
-			Users.fetch({reset: true});
+			Users.fetch({
+				reset: true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "加载中...",
+						msg: "正在加载数据，请稍后！",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
 
 		},
 
@@ -488,6 +508,7 @@ $(function(){
 		},
 
 		addAll: function(){
+			DialogState.exit();
 			this.$(".user_list").html('');
 			Users.each(this.addOne);
 		}
@@ -509,6 +530,201 @@ $(function(){
 			this.$el.html($.tmpl(this.template));
 		}
 	});
+
+	/*
+	* 文章管理部分
+	*/
+	var KnowledgeModel = Backbone.Model.extend({
+		urlRoot: url + '/knowledge',
+		defaults: {
+			title: null,
+			content: null
+		},
+
+		parse: function(data){
+			data = data.action ? data.knowledge : data;
+			data.id = data._id ? data._id : "";
+			return data;
+		},
+		initialize: function(){
+			this.on('request',function(req,xhr){
+				xhr.error(function(res){
+					var err = $.parseJSON(res.responseText);
+										
+					$(err.parent + " .error").html(err.error).css({
+						display : "block"
+					});
+
+				}).success(function(res){
+					$(".add_knowledge .error").empty().hide();
+
+					DialogState.tips({
+						title: res.tips.title,
+						msg: res.tips.msg,
+						action: "",
+						canclose: true,
+						actionTips: "我知道了"
+					});
+
+
+					if(res.action === "add"){
+						Knowledges.add(res.knowledge);
+					} 
+
+					if(res.action === "update"){
+						var knowledge = Knowledges.get(res.knowledge._id);
+						knowledge.set(res.knowledge);
+					}
+				})
+			})
+		},
+		validate : function(attr,option){
+			for(k in attr){
+				var name = "";
+				switch(k){
+					case "title" : name = "文章标题"; break;
+					case "content" : name = "文章内容"; break;
+				}
+				if((k == "title" || k == "content") && attr[k] == ""){
+					return name + "不能为空";
+				}
+			}
+		},
+
+		remove: function(){
+			this.destroy();
+		}
+	});
+
+	var KnowledgeList = Backbone.Collection.extend({
+		url: url + '/knowledge',
+		model: KnowledgeModel,
+
+		parse: function(data){
+
+			return data.knowledges;
+		}
+	});
+
+	var KnowledgeView = Backbone.View.extend({
+		tagName: "li",
+	  	template: $("#knowledge-item-template").template(),
+
+	  	events: {
+			"click .knowledge_edit": "edit",
+			"click .knowledge_delete": "clear"
+	  	},
+
+	  	initialize: function(){
+	  		_.bindAll(this,'render','remove','edit');
+	  		this.model.bind('change', this.render);
+	  		this.model.bind('destroy', this.remove);
+	  	},
+
+	  	edit: function(){
+	  		DialogState.editKnowledge(this.model.toJSON());
+	  	},
+
+	  	render: function(){
+	  		this.$el.html($.tmpl(this.template,this.model.toJSON()));
+	  		return this;
+	  	},
+
+	  	clear: function(){
+	  		this.model.remove();
+	  	} 
+	});
+
+	var KnowledgeListView = Backbone.View.extend({
+		el: "#knowledge_view",
+		initialize: function(){
+			_.bindAll(this, 'addOne', 'addBefore','addAll', 'render');
+
+			Knowledges.bind('add',this.addBefore);
+			Knowledges.bind('reset',this.addAll);
+			
+			Knowledges.fetch({
+				reset: true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "加载中...",
+						msg: "正在加载数据，请稍后！",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
+
+			// 渲染添加知识模板
+			var template = $("#category-list-template").template(),
+				cats = '';
+			if(Categorys.length > 0){
+				cats = Categorys.toJSON();
+				$(".add_knowledge .category").html($.tmpl(template,{
+					cats : cats,
+					type : "add"
+				}));
+				$(".edit_knowledge .category").html($.tmpl(template,{
+					cats : cats,
+					type : "edit"
+				}));
+			} else {
+				Categorys.fetch({
+					reset: false,
+					success: function(categorys,res){
+						cats = categorys.toJSON();
+						$(".add_knowledge .category").html($.tmpl(template,{
+							cats : cats,
+							type : "add"
+						}));
+						$(".edit_knowledge .category").html($.tmpl(template,{
+							cats : cats,
+							type : "edit"
+						}));
+					}
+				})
+			}
+
+		},
+
+		addOne: function(knowledge){
+			var view = new KnowledgeView({model: knowledge});
+			
+			this.$(".knowledge_list").append(view.render().el);
+		},
+
+		addBefore: function(knowledge){
+			
+			var view = new KnowledgeView({model: knowledge});
+			$("#knowledge_view .knowledge_list").prepend(view.render().el);
+		},
+
+		addAll: function(){	
+			DialogState.exit();
+			this.$(".knowledge_list").html('');
+			Knowledges.each(this.addOne);
+		}
+	});
+
+	var KnowledgeConView = Backbone.View.extend({
+		el: "#admin_right",
+		template: $("#knowledge-template").template(),
+
+		events: {
+			"click .knowledge_add": "addKnowledge"
+		},
+
+		addKnowledge: function(){
+			DialogState.addKnowledge();
+		},
+
+		render: function(){
+			this.$el.html($.tmpl(this.template));
+		}
+	});
+
+
 	/*
 	*	公共部分
 	*/
@@ -600,6 +816,8 @@ $(function(){
 			{name: "addCategory",from: "*",to: "*"},
 			{name: "editCategory",from: "*",to: "*"},
 			{name: "addUser",from: "*",to: "*"},
+			{name: "addKnowledge",from: "*",to: "*"},
+			{name: "editKnowledge",from: "*",to: "*"},
 			{name: "tips",from:"",to:""},
 			{name: "editUser",from: "*",to: "*"},
 			{name: "exit",from: "*",to: "*"}
@@ -617,6 +835,19 @@ $(function(){
 				$("#edit_category_title").val(data.title);
 				$("#edit_category_desc").val(data.description);
     			$(".edit_category").center().show();
+			},
+			onaddKnowledge: function(){
+				$(".add_knowledge .error").empty().hide();
+				$(".add_knowledge input").val('');
+    			$(".add_knowledge").center().show();
+			},
+			oneditKnowledge: function(a,b,c,data){
+				$(".edit_knowledge .error").empty().hide();
+				$("#edit_category_select").val(data.category_id);
+				$("#edit_knowledge_title").val(data.title);
+				$("#edit_knowledge_content").val(data.content);
+
+    			$(".edit_knowledge").center().show();
 			},
 			onaddUser: function(){
 				$(".add_user .error").empty().hide();
@@ -642,6 +873,7 @@ $(function(){
 				$(".dialog_bg").hide();
 				$(".dialog").hide(function(){
 					$(this).find('input').val("");
+					$(this).find('textarea').val("");
 				});
 			},
 			onenter: function(){
@@ -664,6 +896,8 @@ $(function(){
 			"click #btn_edit_category"  : "editCategory",
 			"click #btn_add_user"   	: "addUser",
 			"click #btn_edit_user"   	: "editUser",
+			"click #btn_add_knowledge"	: "addKnowledge",
+			"click #btn_publish_knowledge" : "addKnowledge"
 		},
 		close: function(e){
 			e.preventDefault();
@@ -726,7 +960,9 @@ $(function(){
 				return false;
 			}
 
-			Users.create(attr,{wait:true})
+			Users.create(attr,{
+				wait:true
+			})
 		},
 
 		editUser: function(){
@@ -750,9 +986,48 @@ $(function(){
 
 			user = Users.get($(".edit_user").attr('data_id'));
 
-			user.save(attr,{wait: true});
+			user.save(attr,{
+				wait: true
+			});
 
 		},
+
+		addKnowledge: function(e){
+			var action = $(e.currentTarget);
+
+			var attr = {
+				title: $.trim($("#knowledge_title").val()),
+				content: $.trim($("#knowledge_content").val()),
+				category_id: $.trim($("#add_category_select").val())
+			};
+
+			if(action.hasClass('submit_pub')){
+				attr.publish = true;
+			}
+
+			var knowledge = new KnowledgeModel(attr);
+
+			if(!knowledge.isValid()){
+				$(".add_knowledge .error").html(knowledge.validationError).css({
+					display : "block"
+				});
+				return false;
+			}
+
+			Knowledges.create(attr,{
+				wait:true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "添加中...",
+						msg: "正在添加数据，请稍后！",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});	
+		},
+
 		initialize: function(){
 			this.render();
 		}
@@ -761,15 +1036,6 @@ $(function(){
 	var DashboardView = Backbone.View.extend({
 		el: "#admin_right",
 		template: $("#dashboard-template").template(),
-
-		render: function(){
-			this.$el.html($.tmpl(this.template));
-		}
-	});
-
-	var KnowledgeConView = Backbone.View.extend({
-		el: "#admin_right",
-		template: $("#knowledge-template").template(),
 
 		render: function(){
 			this.$el.html($.tmpl(this.template));
@@ -788,11 +1054,11 @@ $(function(){
 	// 路由控制器
 	var AdminRouter = Backbone.Router.extend({
 		routes: {
-			"index" 	: "index",
-			"knowleage" : "knowleage",
-			"category"  : "category",
-			"user"		: "user",
-			"work"		: "work"
+			"index" 			: "index",
+			"knowledge" 		: "knowledge",
+			"category"  		: "category",
+			"user"				: "user",
+			"work"				: "work"
 		},
 
 		initialize: function(){
@@ -800,6 +1066,7 @@ $(function(){
 			window.Categorys = new CategoryList();
 			window.Todos = new TodoList();
 			window.Users = new UserList();
+			window.Knowledges = new KnowledgeList();
 
 			new NavView();
 			new HeadView();
@@ -820,10 +1087,12 @@ $(function(){
 			new TodoListView();
 		},
 
-		knowleage: function(){
+		knowledge: function(){
 			var self = this;
-			Menu.set({current: 'knowleage'});
+			Menu.set({current: 'knowledge'});
 			self.knowledgeConControl.render();
+
+			new KnowledgeListView();
 		},
 
 		category: function(){

@@ -4,34 +4,17 @@ var Category = require('../proxy').Category;
 var _ = require('lodash');
 
 exports.index = function(req, res, next) {
-	var page = parseInt(req.query.page, 10) || 1;
-  	page = page > 0 ? page : 1;
-
   	var proxy = new eventproxy();
   	proxy.fail(next);
 
-  	var query = {};
-  	var limit = 20;
-  	var options = { skip: (page - 1) * limit, limit: limit, sort: '-sub_count'};
 	
-	Category.getCategoryByQuery(query,options,proxy.done('categorys',function(categorys){
+	Category.getCategoryByQuery({},{sort: '-sub_count'},proxy.done('categorys',function(categorys){
 		return categorys;
 	}));
 
-	Category.getCountByQuery(query, proxy.done(function(all_categorys_count){
-		var pages = Math.ceil(all_categorys_count / limit);
-		proxy.emit('pages', pages);
-	}));
-
-	proxy.all("categorys","pages",function(categorys,pages){
-
-		var success = categorys.length > 0 ? true : false;
-		
+	proxy.all("categorys",function(categorys){
 		res.send({
-			categorys: categorys,
-			pages: pages,
-			current_page: page,
-			success: success
+			categorys: categorys
 		});
 	})
 };

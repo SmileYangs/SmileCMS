@@ -93,6 +93,30 @@ exports.remove = function(id,callback){
 	Category.remove({_id:id},callback);
 }
 
+exports.addKnowledge = function(id,callback){
+  Category.findOne({_id:id},function(err,category){
+    if(err){
+      return callback(err);
+    }
+
+    category.knowledge_count += 1;
+
+    category.save(callback);
+  });
+}
+
+exports.reduceKnowledge = function(id,callback){
+  Category.findOne({_id:id},function(err,category){
+    if(err){
+      return callback(err);
+    }
+
+    category.knowledge_count -= 1;
+
+    category.save(callback);
+  });
+}
+
 exports.update = function(id,title,description,callback){
 	Category.findOne({_id:id},function(err,category){
 		if(err){

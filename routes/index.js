@@ -4,6 +4,7 @@ var sign = require('../controllers/sign');
 var user = require('../controllers/user');
 var category = require('../controllers/category');
 var todo = require('../controllers/todo');
+var knowledge = require('../controllers/knowledge');
 var router = express.Router();
 var auth = require('../middlewares/auth');
 
@@ -31,6 +32,12 @@ router.get('/admin/user',auth.adminRequired,user.index);
 router.post('/admin/user',auth.adminRequired,user.create);
 router.put('/admin/user/:id',auth.adminRequired,user.update);
 router.delete('/admin/user/:id',auth.adminRequired,user.delete);
+
+/* knowledge controller */
+router.get('/admin/knowledge',auth.adminRequired,knowledge.index);
+router.post('/admin/knowledge',auth.adminRequired,knowledge.create);
+router.put('/admin/knowledge/:id',auth.adminRequired,knowledge.update);
+router.delete('/admin/knowledge/:id',auth.adminRequired,knowledge.delete);
 
 // sign controller
 // if (config.allow_sign_up) {
