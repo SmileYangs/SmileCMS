@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>iBaike</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name='description' content="百科知识真奇妙">
+    <meta name="keywords" content="百科知识"/>
+	  <link rel='stylesheet' href='/stylesheets/bootstrap.min.css' />
+    <link rel="stylesheet/less" href='/mods/front/index.css' />
+    <link rel="stylesheet" type="text/css" href="/stylesheets/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui.min.css">
+    <script type="text/javascript" src="/libs/less-1.3.0.min.js"></script>
+    <script type="text/javascript" src="/libs/jquery-2.1.0.js"></script>
+  </head>
+    <body>
+        <div id="model-ph"></div>
+        <nav class="navbar navbar-inverse inews-top" role="navigation">
+              <div class="container">
+                  <div class="container-fluid">
+                      <!-- Brand and toggle get grouped for better mobile display -->
+                      <div class="navbar-header">
+                          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#inews-nav">
+                          <span class="sr-only">Toggle navigation</span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                          </button>
+                          <a class="navbar-brand" href="/" title="百科知识真奇妙">iBaike</a>
+                      </div>
+
+                      <!-- Collect the nav links, forms, and other content for toggling -->
+                      <div class="collapse navbar-collapse" id="inews-nav">
+                          <ul class="nav navbar-nav" id="headNav">
+                              <li class="active" data-nav="index"><a>首页</a></li>
+                              <li data-nav="hot"><a>热门知识</a></li> 
+                              <li data-nav="sub"><a>订阅中心</a></li>                         
+                          </ul>
+                          <ul class="nav navbar-nav navbar-right">
+                              <li class="dropdown">
+                                <% if (user) { %>
+                                   <a href="#" class="dropdown-toggle" data-toggle="dropdown"><%= user.username %><b class="caret"></b></a>
+                                  <% } else {%>
+                                     <a href="#" title="登录" class="user-signin" data-toggle="modal" data-target="#loginModal"><i class="fa fa-user"></i></a>
+                                  <% } %>
+                                  <ul class="dropdown-menu text-center">
+                                    <% if (user) { %>
+                                      <li><a href="/admin">编辑个人资料</a></li>
+                                      <% if (superuser) { %>
+                                        <li><a href="/admin">进入管理界面</a></li>
+                                        <li class="divider"></li>
+                                      <% } %>
+                                      <li><a class="poweroff"><i class="fa fa-power-off"></i> 退出登录</a></li>
+                                      <li class="divider"></li>
+                                      <% } %>
+                                  </ul>
+                              </li>
+                          </ul>
+                      </div><!-- /.navbar-collapse -->
+                  </div><!-- /.container-fluid -->
+              </div>
+          </nav>
+       <div id="container" class="container">
+        <% if (!user) { %>
+        <div class="jumbotron">
+          <h1>Welcome</h1>
+          <p>现在立即加入爱百科~订阅自己喜欢的分类,享受阅读好时光</p>
+          <p class="action">
+            <a class="btn btn-primary btn-lg user-signin" href="#" role="button" data-toggle="modal" data-target="#loginModal">登录</a>
+            <a class="btn btn-info btn-lg user-sign" href="#" role="button" data-toggle="modal" data-target="#registerModal">注册</a>
+          </p>
+        </div>
+        <% } %>
+        <div id="main-con" class="row">
+        </div>
+  		

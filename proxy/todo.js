@@ -26,6 +26,10 @@ exports.update = function(id,content,done,callback){
 	})
 }
 
+exports.getCountByQuery = function (query, callback) {
+  Todo.count(query, callback);
+};
+
 exports.getTodosByQuery = function (query, opt, callback) {
   Todo.find(query,'', opt, callback);
 };

@@ -302,6 +302,11 @@ p {
 		box-sizing: border-box;
 		overflow: hidden;
 	}
+
+	.done {
+		text-decoration: line-through;
+		color: #A1A1A1;
+	}
 }
 
 #admin_plan_mini h2 {
@@ -387,8 +392,33 @@ p {
 		background: #fff;
 		border-bottom: 1px solid @normal_color;
 		height: 60px;
+		font-size: 0;
+		position: relative;
 		box-shadow: 0px 1px 5px solid @normal_color;
+		
+		#knowledge-stats {
+			display: inline-block;
+			font-size: 12px;
+			float: right;
+			margin: 0 10px;
+			padding-top: 20px;
 
+			a {
+				display: inline-block;
+				background: @active_color;
+				padding: 0px 5px;
+				text-align: center;
+				color: #fff;
+				.radius(5px);
+				font-size: 12px;
+				margin-left: 5px;
+			}
+
+			.knowledge-clear a {
+				margin-right: -10px;
+				background: #E26F34;
+			}
+		}
 		.admin_operate {
 			height: 60px;
 
@@ -398,8 +428,8 @@ p {
 		}
 	}
 
-	#category_view, #user_view, #knowledge_view {
-		.category_list, .user_list, .knowledge_list {
+	#category_view, #user_view, #knowledge_view,#tem_view {
+		.category_list, .user_list, .knowledge_list,.tem_list {
 			width: 100%;
 
 			.no_data {
@@ -418,8 +448,8 @@ p {
 			}
 		}
 
-		.category, .user, .knowledge {
-			.category_display, .user_display, .knowledge_display {
+		.category, .user, .knowledge, .tem {
+			.category_display, .user_display, .knowledge_display, .tem_display {
 				height: 50px;
 				background: #F3F3F3;
 				border: 1px solid #DDDEE1;
@@ -488,6 +518,7 @@ p {
 
 
 			.knowledge_display {
+				cursor: pointer;
 				background: #fff;
 				width: 280px;
 				height: 300px;
@@ -539,12 +570,12 @@ p {
 
 				.admin_operate {
 					height: 20px;
-					width: 100px;
+					width: 140px;
 					position: absolute;
 					bottom: 10px;
 					right: 5px;
 
-
+					font-size: 12px;
 					li a {
 						height: 20px;
 						line-height: 20px;
@@ -558,8 +589,10 @@ p {
 					}
 				}
 			}
+		}
 
-
+		.selected .knowledge .knowledge_display{
+			background: #dadada;
 		}
 	}
 
@@ -998,7 +1031,7 @@ p {
 }
 
 
-/*µ¯³ö¿òÑùÊ½*/
+/*纰岀倝椴佹灇椹磋矊鑴╅湁鑴㈤檰*/
 .dialog{
 	top:100px;
 	left:100px;

@@ -86,6 +86,10 @@ exports.update = function(id,nickname, username, email, signature,callback){
   })
 }
 
+exports.getCountByQuery = function (query, callback) {
+  User.count(query, callback);
+};
+
 /**
  * 根据关键字，获取一组用户
  * Callback:

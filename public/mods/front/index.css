@@ -1,0 +1,146 @@
+body {
+	padding-bottom: 40px;
+	font-family: "Microsoft YaHei";
+	margin: 0;
+	background: url("../../images/bg.jpg") repeat;
+}
+
+#container {
+	margin-top: 20px;
+}
+
+#supertitle {
+	margin-bottom: 30px;
+}
+
+a {
+  color: #000;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
+	font-family: "Microsoft YaHei";
+}
+h2 > a {
+	font-family: "Microsoft YaHei";
+	font-weight: bolder;
+	color: #1885AF;
+}
+
+.navbar-inverse {
+	border: none;
+}
+
+.inews-top {
+	background-color: #fff;
+	border-bottom: 1px #d0d3d3 solid;
+	padding: 40px 0;
+	border-radius: 0;
+}
+
+
+#headNav {
+	li {
+		cursor: pointer;
+	}
+}
+
+.inews-top .navbar-brand {
+	color: #000;
+	font-weight: bolder;
+	font-size: 35px;
+}
+
+.inews-top .navbar-nav > li > a {
+	color: #000;
+}
+
+.navbar-inverse .navbar-toggle .icon-bar {
+	background: #000;
+}
+
+.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+	background: #fff;
+}
+.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus {
+	color: #000;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li>a:focus {
+	color: #FFF;
+	background-color: rgb(142, 191, 139);
+}
+.inews-top .navbar-nav > .active > a, .inews-top .navbar-nav > .active > a:hover {
+	color: #fff;
+	background-color: #346532;
+}
+.navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:hover, .navbar-inverse .navbar-nav>.open>a:focus {
+	color: #FFF;
+	background-color: #346532;
+}
+
+.navbar-inverse .navbar-nav .open .dropdown-menu>li>a:hover, .navbar-inverse .navbar-nav .open .dropdown-menu>li>a:focus {
+	background: #cdcdcd;
+}
+
+.jumbotron {
+	background: #fff;
+	border: 1px solid #d0d3d3;
+
+	.action {
+		text-align: right;
+
+		a:first-child {
+			margin-right: 5px;
+		}
+	}
+}
+hr {
+	border-top: 1px solid #D0D3D3;
+}
+.dropdown-menu>li>a.poweroff{
+	color: rgb(243, 123, 43);
+}
+.dropdown-menu>li>a.poweroff:hover, .dropdown-menu>li>a.poweroff:focus {
+	color: rgb(255, 102, 0);
+}
+
+.dropdown .user-signin {
+	font-size: 20px;
+	color: #000;
+}
+
+#main-con {
+	margin: 0;
+	.category-con {
+		padding: 0 5px;
+
+		.category {
+			height: 350px;
+			margin: 0px 1px 10px;
+			background: #fff;
+			padding: 5px 10px;
+			box-sizing: border-box;
+
+			h2 {
+				padding-top: 0px;
+				margin-top: 5px;
+			}
+		}
+	}
+}
+
+
+/*modal*/
+.modal-content {
+	font-family: "Microsoft YaHei";
+
+	form .error {
+		display: none;
+	}
+}
+.modal-title{
+	font-weight: bold;
+}
+
+
+

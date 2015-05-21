@@ -9,8 +9,8 @@ var crypto = require('crypto');
 
 
 exports.login = function(req,res,next){
-	var username = validator.trim(req.body.name);
-	var pass = validator.trim(req.body.pass);
+	var username = validator.trim(req.body.username);
+	var pass = validator.trim(req.body.password);
 	var ep = new eventproxy();
 	ep.fail(next);
 
@@ -67,6 +67,54 @@ exports.login = function(req,res,next){
 			return ep.emit('login_error');
 		}
 	});
+}
+
+// sign up
+exports.signup = function(req,res,next){
+	var username = validator.trim(req.body.username);
+	var email = validator.trim(req.body.email);
+	var pass = validator.trim(req.body.password);
+	var rePass = validator.trim(req.body.rep_pass);
+	var nickname = "";
+	var signature = "";
+
+	var ep = new eventproxy();
+  	ep.fail(next);
+
+  	ep.on('prop_err', function (msg) {
+		res.status(422);
+		res.send({error: msg});
+	});
+
+	User.getUsersByQuery({'$or': [
+	  {'username': username},
+	  {'email': email}
+	]},{},function(err, users){
+		if (err) {
+		  return next(err);
+		}
+		if (users.length > 0) {
+		  ep.emit('prop_err', '用户名或邮箱已被使用。');
+		  return;
+		}
+
+		//生成密码的md5值
+		var md5 = crypto.createHash('md5');
+		password = md5.update(pass).digest('base64');
+
+		User.newAndSave(nickname,username,password,email,signature,function(err,user){
+			if (err) {
+			  return next(err);
+			}
+
+			authMiddleWare.gen_session(req,user, res);
+			res.send({
+			   "status": "success"
+			});
+		})
+
+
+	})	
 }
 
 

@@ -13,8 +13,10 @@ require('./user');
 require('./category');
 require('./knowledge');
 require('./todo');
+require('./category_sub');
 
 exports.User = mongoose.model('User');
 exports.Category = mongoose.model('Category');
 exports.Knowledge = mongoose.model('Knowledge');
 exports.Todo = mongoose.model('Todo');
+exports.CategorySub = mongoose.model('CategorySub');

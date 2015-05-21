@@ -39,7 +39,7 @@ exports.getKnowledgesByQuery = function (query, opt, callback) {
  	 	}
 
  	 	if (knowledges.length === 0) {
- 	 	 	return callback([]);
+ 	 	 	return callback(null,[]);
  	 	}
 
  	 	var knowledges_id = _.pluck(knowledges,'id');
@@ -66,9 +66,40 @@ exports.getKnowledgesByQuery = function (query, opt, callback) {
  	});
 };
 
+exports.getCountByQuery = function (query, callback) {
+  Knowledge.count(query, callback);
+};
+
 
 exports.remove = function(id,callback){
 	Knowledge.remove({_id:id},callback);
+}
+
+exports.moveToUncate = function(id,category_id,callback){
+	Knowledge.findOne({_id:id},function(err,knowledge){
+		if(err){
+			return callback(err);
+		}
+
+		knowledge.category_id = category_id;
+
+		knowledge.save(callback);
+	})
+}
+
+exports.update = function(id,title,content,category_id,publish,callback){
+	Knowledge.findOne({_id:id},function(err,knowledge){
+		if(err){
+			return callback(err);
+		}
+
+		knowledge.title = title;
+		knowledge.content = content;
+		knowledge.category_id = category_id;
+		knowledge.publish = publish;
+
+		knowledge.save(callback);
+	})
 }
 
 

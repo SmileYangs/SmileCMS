@@ -2,7 +2,7 @@
 <html>
   <head>
     <title><%= title %></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='description' content='<%= description %>'>
     <meta name="keywords" content="<%= keywords %>"/>
     <meta charset="utf-8"> 
@@ -17,9 +17,9 @@
     <div id="dialog-ph"></div>
     <div id="admin_header">
       <h1><%= title %></h1>
-      <div id="admin_search">
+     <!--  <div id="admin_search">
         <input type="text" id="admin_search" placeholder="搜索"><i class="admin_search fa fa-search"></i>
-      </div>
+      </div> -->
       <div id="admin_action">
         <a class="admin_out"><i class="fa fa-power-off"></i></a>
       </div>
@@ -33,14 +33,9 @@
         <i class="fa fa-file-text"></i>分类管理<i class="point"></i>
         </a></li>
       <li><a data-nav="user"><i class="fa fa-users"></i>用户管理<i class="point"></i></a></li>
-      <li><a data-nav="work"><i class="fa fa-comments"></i>评论管理<i class="point"></i></a></li>
+      <li><a data-nav="template"><i class="fa fa-desktop"></i>模板管理<i class="point"></i></a></li>
       <div id="admin_plan_mini">
-        <h2>您的计划：<i class="close_mini_plan fa fa-times"></i></h2>
-        <p>添加一个新页面</p>
-        <p>发布两篇新文章</p>
-        <a class="admin_view_more">
-          查看更多
-        </a>
+        
       </div>
 
       <div id="admin_footer">

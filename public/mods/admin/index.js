@@ -1,11 +1,9 @@
 $(function(){
-	var url = "http://localhost:3333/admin";
+	var url = "http://localhost:8888/admin";
 
 	/*
 	* 分类管理
 	*/
-
-	// 分类模型
 	var CategoryModel = Backbone.Model.extend({
 		urlRoot: url + "/category",
 		defaults: {
@@ -15,6 +13,8 @@ $(function(){
 			"knowledge_count": 0
 		},
 		parse: function(data){
+			data = data.action ? data.category : data;
+
 			data.id = data._id;
 			return data;
 		},
@@ -31,17 +31,48 @@ $(function(){
 				}
 			}
 		},
-		//删除一个条目
+		initialize: function(){
+			this.on('request',function(req,xhr){
+				xhr.error(function(res){
+					var err = $.parseJSON(res.responseText);
+										
+					$(err.parent + " .error").html(err.error).css({
+						display : "block"
+					});
+
+				}).success(function(res){
+					$(res.parent + " .error").empty().hide();
+
+					DialogState.tips({
+						title: res.tips.title,
+						msg: res.tips.msg,
+						action: "",
+						canclose: true,
+						actionTips: "我知道了"
+					});
+
+					if(res.action === "add"){
+						Categorys.add(res.category);
+					} 
+
+					if(res.action === "update"){
+						var category = Categorys.get(res.category._id);
+						category.set(res.category);
+					}
+				})
+			})
+		},
+		//É¾³ýÒ»¸öÌõÄ¿
 	    clear: function() {
 	    	this.destroy();
 	    }
 	});
 
-	// 分类集合
     var CategoryList = Backbone.Collection.extend({
     	url: url + "/category",
     	model: CategoryModel,
     	parse: function(data) {
+
 		   	return data.categorys;
 		}
     });
@@ -106,7 +137,7 @@ $(function(){
 				beforeSend: function(){
 					DialogState.tips({
 						title: "加载中...",
-						msg: "正在加载数据，请稍后！",
+						msg: "数据正在加载中",
 						action: "waiting",
 						canclose: false,
 						actionTips: ""
@@ -148,14 +179,12 @@ $(function(){
 	});
 
 	/*
-	* todo部分
+	* todo管理
 	*/
 
-	// todo 模型
 	var Todo = Backbone.Model.extend({
 		urlRoot: url + "/index/todo",
 
-		// 设置默认的属性
 		defaults: {
 			content: "empty todo...",
 			done: false
@@ -164,55 +193,44 @@ $(function(){
 			data.id = data._id ? data._id : '';
 			return data;
 		},
-		//确保每一个content都不为空
+		
 		initialize: function() {
 			if (!this.get("content")) {
 			  this.set({"content": this.defaults.content});
 			}
 		},
-		// 将一个任务的完成状态置为逆状态
+		
 		toggle: function() {
 			this.save({done: !this.get("done")});
 		},
-		//删除一个条目
+		
 		clear: function() {
 			this.destroy();
 		}
 	});
-	/**
-	 *Todo的一个集合
-	 **/
+	
 	var TodoList = Backbone.Collection.extend({
 		url: url + "/index/todo",
-		// 设置Collection的模型为Todo
+		
 		model: Todo,
-		//获取所有已经完成的任务数目
+		
 		parse: function(data){
-
 			return data.todos;
 		},
 		done: function() {
-			// 使用underscore的filter过滤出所有已经完成的事件
 			return this.filter(function(todo){ return todo.get('done'); });
 		},
 
-		//获取任务列表中未完成的任务数目
+		
 		remaining: function() {
-			// 使用underscore的without函数移除已经完成的任务
 			return this.without.apply(this, this.done());
 		}
 	});
 
-	/**
-	 *这个view的主要作用是控制任务列表
-	 **/
 	var TodoView = Backbone.View.extend({
-		//下面这个标签的作用是，把template模板中获取到的html代码放到这标签中。
 		tagName:  "li",
-		// 获取一个任务条目的模板
 		template: $('#item-template').template(),
 
-		// 为每一个任务条目绑定事件
 		events: {
 			"click .check"              : "toggleDone",
 			"dblclick label.todo-content" : "edit",
@@ -221,57 +239,45 @@ $(function(){
 			"blur .todo-input"          : "close"
 		},
 
-		//在初始化设置了todoview和todo的以一对一引用，这里我们可以把todoview看作是todo在界面的映射。
 		initialize: function() {
 			_.bindAll(this, 'render', 'close', 'remove');
 			this.model.bind('change', this.render);
-			this.model.bind('destroy', this.remove);   //这个remove是view的中的方法，用来清除页面中的dom
+			this.model.bind('destroy', this.remove);   
 		},
 
-		// 渲染todo中的数据到 item-template 中，然后返回对自己的引用this
 		render: function() {
 			$(this.el).html($.tmpl(this.template,this.model.toJSON()));
 			this.input = this.$('.todo-input');
 			return this;
 		},
 
-		// 控制任务完成或者未完成
 		toggleDone: function() {
 			this.model.toggle();
 		},
 
-		// 修改任务条目的样式
 		edit: function() {
 			$(this.el).addClass("editing");
 			this.input.focus();
 		},
 
-		// 关闭编辑界面，并把修改内容同步到界面
 		close: function() {
 			this.model.save({content: this.input.val()});
 			$(this.el).removeClass("editing");
 		},
-		// 按下回车之后，关闭编辑界面
 		updateOnEnter: function(e) {
 			if (e.keyCode == 13) this.close();
 		},
-		// 移除对应条目，以及对应的数据对象
 		clear: function() {
 			this.model.clear();
 		}
 	});
 
-	/**
-	 *这个view的功能是显示所有任务列表，显示整体的列表状态（如：完成多少，未完成多少），以及任务的添加。主要是整体上的一个控制
-	 **/
+
 	var TodoListView = Backbone.View.extend({
-		//绑定页面上主要的DOM节点
 		el: "#todo_con",
 
-		// 在底部显示的统计数据模板
 		template: $('#stats-template').template(),
 
-		// 绑定dom节点上的事件
 		events: {
 			"keypress #new-todo":  "createOnEnter",
 			"keyup #new-todo":     "showTooltip",
@@ -279,9 +285,7 @@ $(function(){
 			"click .mark-all-done": "toggleAllComplete"
 		},
 
-		//在初始化过程中，绑定事件到Todos上，当任务列表改变时会触发对应的事件。最后把存在localStorage中的数据取出来。
 		initialize: function() {
-			//下面这个是underscore库中的方法，用来绑定方法到目前的这个对象中，是为了在以后运行环境中调用当前对象的时候能够找到对象中的这些方法。
 			_.bindAll(this, 'addOne', 'addAll', 'render', 'toggleAllComplete');
 
 			
@@ -292,61 +296,51 @@ $(function(){
 			Todos.bind('reset',   this.addAll);
 			Todos.bind('all',     this.render);
 
-			Todos.fetch({reset: true});
+			if(Todos.length > 0){
+				Todos.trigger('reset');
+			}
 		},
 
 		// Re-rendering the App just means refreshing the statistics -- the rest of the app doesn't change.
-		// 更改当前任务列表的状态
 		render: function() {
 			var done = Todos.done().length;
 			var remaining = Todos.remaining().length;
-
 
 			$(this.el).find('#todo-stats').html($.tmpl(this.template,{
 				total:      Todos.length,
 				done:       done,
 				remaining:  remaining
 			}));
-			//根据剩余多少未完成确定标记全部完成的checkbox的显示
 			this.allCheckbox.checked = !remaining;
 		},
 
-		//添加一个任务到页面id为todo-list的div/ul中
 		addOne: function(todo) {
+			
 			var view = new TodoView({model: todo});
 			$(this.el).find("#todo-list").append(view.render().el);
 		},
 
-		// 把Todos中的所有数据渲染到页面,页面加载的时候用到
 		addAll: function() {
 			Todos.each(this.addOne);
 		},
 
-		//生成一个新Todo的所有属性的字典
 		newAttributes: function() {
 			return {
 				content: this.input.val(),
 				done:    false
 			};
 		},
-
-		//创建一个任务的方法，使用backbone.collection的create方法。将数据保存到localStorage,这是一个html5的js库。需要浏览器支持html5才能用。
 		// persisting it to *localStorage*.
 		createOnEnter: function(e) {
 			if (e.keyCode != 13) return;
-			Todos.create(this.newAttributes());  //创建一个对象之后会在backbone中动态调用Todos的add方法，该方法已绑定addOne。
+			Todos.create(this.newAttributes());  
 			this.input.val('');
 		},
 
-		// 去掉所有已经完成的任务
 		clearCompleted: function() {
 			_.each(Todos.done(), function(todo){ todo.clear(); });
 			return false;
 		},
-
-		//用户输入新任务的时候提示，延时1秒钟
-		//处理逻辑是：首先获取隐藏的提示节点的引用，然后获取用户输入的值，
-		//先判断是否有设置显示的延时，如果有则删除，然后再次设置，因为这个事件是按键的keyup时发生的，所以该方法会被连续调用。
 		showTooltip: function(e) {
 			var tooltip = $(this.el).find(".ui-tooltip-top");
 			var val = this.input.val();
@@ -357,8 +351,6 @@ $(function(){
 			this.tooltipTimeout = _.delay(show, 1000);
 		},
 
-		//处理页面点击标记全部完成按钮
-		//处理逻辑：如果标记全部按钮已选，则所有都完成，如果未选，则所有的都未完成。
 		toggleAllComplete: function () {
 			var done = this.allCheckbox.checked;
 			Todos.each(function (todo) { todo.save({'done': done}); });
@@ -366,8 +358,84 @@ $(function(){
 
 	});
 
+	/*模板管理*/
+	var TemModel = Backbone.Model.extend({
+		urlRoot: url + '/template',
+		defaults: {
+			name: "default",
+			selected: null
+		},
+
+		toggle: function() {
+			this.save({selected: !this.get("selected")});
+		}
+	});
+
+	var TemList = Backbone.Collection.extend({
+		url: url + '/template',
+		model: TemModel,
+		parse: function(data){
+			return data.tems;
+		}
+	});
+
+	var TemView = Backbone.View.extend({
+		tagName: "li",
+		template: $("#tem-item-template").template(),
+
+		render: function() {
+			$(this.el).html($.tmpl(this.template,this.model.toJSON()));
+			
+			return this;
+		}
+	});
+
+	var TemListView = Backbone.View.extend({
+		el: "#tem_view",
+
+		initialize: function(){
+			_.bindAll(this, 'addOne','addAll');
+
+			Tems.bind('add',this.addOne);
+			Tems.bind('reset',this.addAll);
+			
+			Tems.fetch({
+				reset: true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "加载中...",
+						msg: "数据正在加载中",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
+		},
+
+		addOne: function(knowledge){
+			var view = new TemView({model: knowledge});
+			
+			this.$(".tem_list").append(view.render().el);
+		},
+
+		addAll: function(){	
+			DialogState.exit();
+			Tems.each(this.addOne);
+		}
+	});
+
+	var TemManView = Backbone.View.extend({
+		el: "#admin_right",
+		template: $("#tem-manage-template").template(),
+
+		render: function(){
+			this.$el.html($.tmpl(this.template));
+		}
+	});
+
 	/*
-	* 用户管理部分
+	* 用户管理
 	*/
 	var UserModel = Backbone.Model.extend({
 		urlRoot: url + '/user',
@@ -393,7 +461,7 @@ $(function(){
 					});
 
 				}).success(function(res){
-					$(".add_user .error").empty().hide();
+					$(res.parent + " .error").empty().hide();
 
 					DialogState.tips({
 						title: res.tips.title,
@@ -491,18 +559,15 @@ $(function(){
 				beforeSend: function(){
 					DialogState.tips({
 						title: "加载中...",
-						msg: "正在加载数据，请稍后！",
+						msg: "数据正在加载中...",
 						action: "waiting",
 						canclose: false,
 						actionTips: ""
 					});
 				}
 			});
-
 		},
-
 		addOne: function(user){
-
 			var view = new UserView({model: user});
 			this.$(".user_list").append(view.render().el);
 		},
@@ -532,13 +597,14 @@ $(function(){
 	});
 
 	/*
-	* 文章管理部分
+	* 知识管理
 	*/
 	var KnowledgeModel = Backbone.Model.extend({
 		urlRoot: url + '/knowledge',
 		defaults: {
 			title: null,
-			content: null
+			content: null,
+			selected: false
 		},
 
 		parse: function(data){
@@ -549,14 +615,8 @@ $(function(){
 		initialize: function(){
 			this.on('request',function(req,xhr){
 				xhr.error(function(res){
-					var err = $.parseJSON(res.responseText);
-										
-					$(err.parent + " .error").html(err.error).css({
-						display : "block"
-					});
 
 				}).success(function(res){
-					$(".add_knowledge .error").empty().hide();
 
 					DialogState.tips({
 						title: res.tips.title,
@@ -568,7 +628,9 @@ $(function(){
 
 
 					if(res.action === "add"){
-						Knowledges.add(res.knowledge);
+						Knowledges.add(res.knowledge,{
+							add: true
+						});
 					} 
 
 					if(res.action === "update"){
@@ -590,7 +652,12 @@ $(function(){
 				}
 			}
 		},
-
+		toggle: function(){
+			this.set({selected: !this.get("selected")});
+		},
+		setStatus: function(status){
+			this.set({selected: status});
+		},
 		remove: function(){
 			this.destroy();
 		}
@@ -603,14 +670,18 @@ $(function(){
 		parse: function(data){
 
 			return data.knowledges;
+		},
+
+		selected: function() {
+			return this.filter(function(knowledge){ return knowledge.get('selected'); });
 		}
 	});
 
 	var KnowledgeView = Backbone.View.extend({
 		tagName: "li",
 	  	template: $("#knowledge-item-template").template(),
-
 	  	events: {
+	  		"click": "toggle",
 			"click .knowledge_edit": "edit",
 			"click .knowledge_delete": "clear"
 	  	},
@@ -620,8 +691,14 @@ $(function(){
 	  		this.model.bind('change', this.render);
 	  		this.model.bind('destroy', this.remove);
 	  	},
+	  	toggle: function(){
+	  		this.model.toggle();
+	  		this.$el.toggleClass('selected');
+	  	},
 
-	  	edit: function(){
+	  	edit: function(e){
+	  		e.stopPropagation();
+
 	  		DialogState.editKnowledge(this.model.toJSON());
 	  	},
 
@@ -630,25 +707,29 @@ $(function(){
 	  		return this;
 	  	},
 
-	  	clear: function(){
+	  	clear: function(e){
+	  		e.stopPropagation();
 	  		this.model.remove();
 	  	} 
 	});
 
 	var KnowledgeListView = Backbone.View.extend({
 		el: "#knowledge_view",
-		initialize: function(){
-			_.bindAll(this, 'addOne', 'addBefore','addAll', 'render');
+		template: $("#knowledge-status-template").template(),
 
-			Knowledges.bind('add',this.addBefore);
+		initialize: function(){
+			_.bindAll(this, 'addOne','addAll', 'render');
+
+			Knowledges.bind('add',this.addOne);
 			Knowledges.bind('reset',this.addAll);
+			Knowledges.bind('all',this.render);
 			
 			Knowledges.fetch({
 				reset: true,
 				beforeSend: function(){
 					DialogState.tips({
 						title: "加载中...",
-						msg: "正在加载数据，请稍后！",
+						msg: "数据正在加载中",
 						action: "waiting",
 						canclose: false,
 						actionTips: ""
@@ -656,7 +737,7 @@ $(function(){
 				}
 			});
 
-			// 渲染添加知识模板
+			// äÖÈ¾Ìí¼ÓÖªÊ¶Ä£°å
 			var template = $("#category-list-template").template(),
 				cats = '';
 			if(Categorys.length > 0){
@@ -688,16 +769,22 @@ $(function(){
 
 		},
 
+		render: function(){
+			var selected = Knowledges.selected().length,
+				total = Knowledges.length;
+
+			$("#admin_right").find('#knowledge-stats').html($.tmpl(this.template,{
+				total: total,
+				selected: selected,
+				selectedAll: selected === total
+			}));
+			
+		},
+
 		addOne: function(knowledge){
 			var view = new KnowledgeView({model: knowledge});
 			
 			this.$(".knowledge_list").append(view.render().el);
-		},
-
-		addBefore: function(knowledge){
-			
-			var view = new KnowledgeView({model: knowledge});
-			$("#knowledge_view .knowledge_list").prepend(view.render().el);
 		},
 
 		addAll: function(){	
@@ -712,13 +799,37 @@ $(function(){
 		template: $("#knowledge-template").template(),
 
 		events: {
-			"click .knowledge_add": "addKnowledge"
+			"click .knowledge_add": "addKnowledge",
+			"click .select_all_knowledge": "toggleSelectAll",
+			"click .knowledge-clear a": "clearCompleted"
 		},
 
 		addKnowledge: function(){
 			DialogState.addKnowledge();
 		},
+		toggleSelectAll: function(){
 
+			var selected = Knowledges.selected().length,
+				status = false;
+
+			if(selected < Knowledges.length){
+				status = true;
+			}
+
+			if(status){
+				$('.knowledge_list > li').addClass('selected');
+			} else {
+				$('.knowledge_list > li').removeClass('selected');
+			}
+
+			Knowledges.each(function(knowledge){
+				knowledge.setStatus(status);
+			})
+		},
+		clearCompleted: function(){
+			_.each(Knowledges.selected(), function(knowledge){ knowledge.remove(); });
+			return false;
+		},
 		render: function(){
 			this.$el.html($.tmpl(this.template));
 		}
@@ -728,8 +839,6 @@ $(function(){
 	/*
 	*	公共部分
 	*/
-
-	// 导航模型
 	var MenuModel = Backbone.Model.extend({
 		defaults:{
 			current: "index"
@@ -737,16 +846,14 @@ $(function(){
 		initialize: function(){
 			this.on("change:current",function(model,current){
 				$('#admin_leftNav').find('a').removeClass('nav_active');
-				$('#admin_leftNav .dropdown').removeClass('active');
 				$('#admin_leftNav').find('a[data-nav='+current+']').addClass('nav_active');
 			})
 		},
 
 	});
-
-	// 左侧导航视图
 	var NavView = Backbone.View.extend({
 		el: "#admin_leftNav",
+		template: $("#mini-task-pannel").template(),
 		events: {
 			"click li a" 				: "toggleNav",
 			"click .close_mini_plan"	: "closeMiniPlan",
@@ -764,12 +871,25 @@ $(function(){
 			miniPlan.hide();
 		},
 
+		initialize: function(){
+			var self = this;
+
+			Todos.fetch({
+				reset: false,
+				success:function(Todos){
+					var data = {
+						tasks: Todos.toJSON().slice(0,3)
+					};
+
+					$(self.el).find('#admin_plan_mini').html($.tmpl(self.template,data));
+				}
+			});
+		},
+
 		toWorkManage: function(){
-			ARouter.navigate('work',{trigger: true});
+			ARouter.navigate('index',{trigger: true});
 		}
 	});
-
-	// 顶部视图
 	var HeadView = Backbone.View.extend({
 		el: "#admin_header",
 		events: {
@@ -810,7 +930,7 @@ $(function(){
 		}
 	});
 
-	// 对话框状态机
+	// 状态机
 	var DialogState = StateMachine.create({
 		events: [
 			{name: "addCategory",from: "*",to: "*"},
@@ -843,6 +963,11 @@ $(function(){
 			},
 			oneditKnowledge: function(a,b,c,data){
 				$(".edit_knowledge .error").empty().hide();
+				$(".edit_knowledge").attr({
+					'data_id': data.id,
+					'data_publish': data.publish
+				});
+
 				$("#edit_category_select").val(data.category_id);
 				$("#edit_knowledge_title").val(data.title);
 				$("#edit_knowledge_content").val(data.content);
@@ -886,7 +1011,7 @@ $(function(){
 		}
 	});
 
-	// 弹出框
+	// 对话框
 	var DialogView = Backbone.View.extend({
 		el: "#dialog-ph",
 		template: $("#dialog-template").template(),
@@ -897,7 +1022,9 @@ $(function(){
 			"click #btn_add_user"   	: "addUser",
 			"click #btn_edit_user"   	: "editUser",
 			"click #btn_add_knowledge"	: "addKnowledge",
-			"click #btn_publish_knowledge" : "addKnowledge"
+			"click #btn_publish_knowledge" : "addKnowledge",
+			"click #btn_edit_knowledge"	: "editKnowledge",
+			"click #btn_edit_publish_knowledge" : "editKnowledge"
 		},
 		close: function(e){
 			e.preventDefault();
@@ -920,8 +1047,9 @@ $(function(){
 				return false;
 			}
 
-			Categorys.create(attr);
-			DialogState.exit();
+			Categorys.create(attr,{
+				wait: true
+			});
 		},
 
 		editCategory: function(){
@@ -930,17 +1058,19 @@ $(function(){
 				description: $.trim($("#edit_category_desc").val())
 			}; 
 
-			var category = Categorys.get($(".edit_category").attr('data_id'));
-			category.set(attr);
+			var category = new CategoryModel(attr);
+			
 			if(!category.isValid()){
 				$(".edit_category .error").html(category.validationError).css({
 					display : "block"
 				});
 				return false;
 			}
-			
-			category.save();
-			DialogState.exit();
+
+			category = Categorys.get($(".edit_category").attr('data_id'));
+			category.save(attr,{
+				wait: true
+			});
 		},
 		addUser: function(){
 			var attr = {
@@ -1019,13 +1149,53 @@ $(function(){
 				beforeSend: function(){
 					DialogState.tips({
 						title: "添加中...",
-						msg: "正在添加数据，请稍后！",
+						msg: "数据正在添加中",
 						action: "waiting",
 						canclose: false,
 						actionTips: ""
 					});
 				}
 			});	
+		},
+
+		editKnowledge: function(e){
+			var action = $(e.currentTarget);
+
+			var attr = {
+				title: $.trim($("#edit_knowledge_title").val()),
+				content: $.trim($("#edit_knowledge_content").val()),
+				category_id: $.trim($("#edit_category_select").val())
+			};
+
+			if(action.hasClass('submit_pub')){
+				attr.publish = true;
+			} else {
+				attr.publish = $(".edit_knowledge").attr('data_publish');
+			}
+
+			var knowledge = new KnowledgeModel(attr);
+
+			if(!knowledge.isValid()){
+				$(".add_knowledge .error").html(knowledge.validationError).css({
+					display : "block"
+				});
+				return false;
+			}
+
+			knowledge = Knowledges.get($(".edit_knowledge").attr('data_id'));
+
+			knowledge.save(attr,{
+				wait:true,
+				beforeSend: function(){
+					DialogState.tips({
+						title: "更新中...",
+						msg: "数据正在更新中",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
 		},
 
 		initialize: function(){
@@ -1039,26 +1209,30 @@ $(function(){
 
 		render: function(){
 			this.$el.html($.tmpl(this.template));
+
+
+			$.ajax({
+				url: url + "/index",
+				dataType: "json",
+				type: "get",
+				success: function(res){
+					$(".all_state .knowledges").html($.tmpl($("#dashboard-knowledge-template").template(),res.knowledge));
+					$(".all_state .categorys").html($.tmpl($("#dashboard-category-template").template(),res.category));
+					$(".all_state .users").html($.tmpl($("#dashboard-user-template").template(),res.user));
+					$(".all_state .works").html($.tmpl($("#dashboard-work-template").template(),res.todo));
+				}
+			})
 		}
 	});
 
-	var WorkConView = Backbone.View.extend({
-		el: "#admin_right",
-		template: $("#work-template").template(),
-
-		render: function(){
-			this.$el.html($.tmpl(this.template));
-		}
-	});
-
-	// 路由控制器
+	// Â·ÓÉ¿ØÖÆÆ÷
 	var AdminRouter = Backbone.Router.extend({
 		routes: {
 			"index" 			: "index",
 			"knowledge" 		: "knowledge",
 			"category"  		: "category",
 			"user"				: "user",
-			"work"				: "work"
+			"template"			: "template"
 		},
 
 		initialize: function(){
@@ -1067,6 +1241,11 @@ $(function(){
 			window.Todos = new TodoList();
 			window.Users = new UserList();
 			window.Knowledges = new KnowledgeList();
+			window.Tems = new TemList();
+			
+			window.AppStatus = {
+				addKnowledge: false
+			};
 
 			new NavView();
 			new HeadView();
@@ -1075,8 +1254,8 @@ $(function(){
 			this.categoryConControl = new CategoryConView();
 			this.knowledgeConControl = new KnowledgeConView();
 			this.userConControl = new UserConView();
-			this.workConControl = new WorkConView();
 			this.dashboarControl = new DashboardView();
+			this.temControl = new TemManView();
 		},
 
 		index: function(){
@@ -1111,17 +1290,19 @@ $(function(){
 			new UserListView();
 		},
 
-		work: function(){
+		template: function(){
 			var self = this;
-			Menu.set({current: 'work'});
-			self.workConControl.render();
-		}
+			Menu.set({current: 'template'});
+			self.temControl.render();
+
+			new TemListView();	
+		}	
 	});
 
 	var ARouter = new AdminRouter();
 	Backbone.history.start({pushState: false});
 
-	// app管理
+	// app¹ÜÀí
 	var app = {
 		start: function(){
 			ARouter.navigate('index',{trigger: true}); 

@@ -8,60 +8,32 @@
 			<div class="state_con">
 				<div>
 					<h2><i class="fa fa-book"></i>文章统计</h2>
-					<ul class="now_state">
-						<li>
-							<span>文章总数</span>
-							<span class="count">200</span>
-						</li>
-						<li>
-							<span>热门文章</span>
-							<span class="count">50</span>
-						</li>
+					<ul class="now_state knowledges">
+						
 					</ul>
 				</div>
 			</div>
 			<div class="state_con">
 				<div>
 					<h2><i class="fa fa-file-text"></i>分类统计</h2>
-					<ul class="now_state">
-						<li>
-							<span>分类总数</span>
-							<span class="count">200</span>
-						</li>
-						<li>
-							<span>热门分类</span>
-							<span class="count">50</span>
-						</li>
+					<ul class="now_state categorys">
+						
 					</ul>
 				</div>
 			</div>
 			<div class="state_con">
 				<div>
 					<h2><i class="fa fa-users"></i>用户统计</h2>
-					<ul class="now_state">
-						<li>
-							<span>用户总数</span>
-							<span class="count">200</span>
-						</li>
-						<li>
-							<span>活跃用户</span>
-							<span class="count">50</span>
-						</li>
+					<ul class="now_state users">
+						
 					</ul>
 				</div>
 			</div>
 			<div class="state_con">
 				<div>
 					<h2><i class="fa fa-tasks"></i>任务统计</h2>
-					<ul class="now_state">
-						<li>
-							<span>任务总数</span>
-							<span class="count">200</span>
-						</li>
-						<li>
-							<span>已完成</span>
-							<span class="count">50</span>
-						</li>
+					<ul class="now_state works">
+						
 					</ul>
 				</div>
 			</div>
@@ -89,14 +61,53 @@
 		</div>
 	</div>
 </script>
-
+<script id="dashboard-user-template" type="text/template">
+	<li>
+		<span>用户总数</span>
+		<span class="count">${total}</span>
+	</li>
+	<li>
+		<span>活跃用户</span>
+		<span class="count">${hot}</span>
+	</li>
+</script>
+<script id="dashboard-knowledge-template" type="text/template">
+	<li>
+		<span>文章总数</span>
+		<span class="count">${total}</span>
+	</li>
+	<li>
+		<span>热门文章</span>
+		<span class="count">${hot}</span>
+	</li>
+</script>
+<script id="dashboard-category-template" type="text/template">
+	<li>
+		<span>分类总数</span>
+		<span class="count">${total}</span>
+	</li>
+	<li>
+		<span>热门分类</span>
+		<span class="count">0</span>
+	</li>
+</script>
+<script id="dashboard-work-template" type="text/template">
+	<li>
+		<span>任务总数</span>
+		<span class="count">${total}</span>
+	</li>
+	<li>
+		<span>已完成</span>
+		<span class="count">${done}</span>
+	</li>
+</script>
 <!-- 任务管理模板 -->
 <!-- Templates -->
 <script type="text/template" id="item-template">
 	<div class="todo{{if done}} done{{/if}}">
 		<div class="display">
-			<input id="${id}" class="check" type="checkbox" {{if done}} checked="checked"{{/if}}/>
-			<label for="${id}" class="todo-content">${content}</label>
+			<input class="check" type="checkbox" {{if done}} checked="checked"{{/if}}/>
+			<label class="todo-content">${content}</label>
 			<span class="todo-destroy fa fa-times-circle"></span>
 		</div>
 		<div class="edit">
@@ -129,12 +140,40 @@
 		<ul class="admin_operate">
 			<li><a class="knowledge_add"><i class="fa fa-plus"></i>新增</a></li>
 		</ul>
+		<div id="knowledge-stats">
+		</div>
 	</div>
 	<div id="knowledge_view">
 		<ul class="knowledge_list"></ul>
 	</div>
 </script>
 
+<script type="text/template" id="knowledge-status-template">
+	{{if selected}}
+		<span class="knowledge-clear">
+			<a href="#">
+				删除 <span class="number-done">${selected}</span>
+				篇文章</span>
+			</a>
+		</span>
+	{{/if}}
+	{{if total}}
+		<span class="knowledge-count">
+			共有<span class="number">${total}</span>篇文章
+		</span>
+		<a class="select_all_knowledge">{{if selectedAll}}取消全选{{else}}选择全部{{/if}}</a>
+	{{/if}}
+</script>
+
+<script type="text/template" id="mini-task-pannel">
+	<h2>近期任务：<i class="close_mini_plan fa fa-times"></i></h2>
+	{{each(i,task) tasks}}
+		<p{{if task.done}} class="done"{{/if}}>${task.content}</p>
+	{{/each}}
+	<a class="admin_view_more">
+	  查看更多
+	</a>
+</script>
 <script id="knowledge-item-template" type="text/template">
 	<div class="knowledge">
 		<div class="knowledge_display">
@@ -152,6 +191,7 @@
 				${content}
 			</div>
 			<ul class="admin_operate">
+				<li>{{if publish}}已发布{{else}}未发布{{/if}}</li>
 				<li><a class="knowledge_edit"><i class="fa fa-pencil"></i>编辑</a></li>
 				<li><a class="knowledge_delete"><i class="fa fa-minus"></i>删除</a></li>
 			</ul>
@@ -193,16 +233,6 @@
 </script>
 
 
-<!-- 任务管理模板 -->
-<script id="work-template" type="text/template">
-	<div class="page_head">
-		<h2>评论管理</h2>
-	</div>
-	<div id="work_view">
-		<ul class="work_list"></ul>
-	</div>
-</script>
-
 <!-- 分类管理模板 -->
 <script id="category-template" type="text/template">
 	<div class="page_head">
@@ -221,13 +251,12 @@
 		<div class="category_display">
 			<h2>${title}</h2>
 			<ul class="category_state">
-				<li>订阅总数：${sub_count}</li>
 				<li>知识总数：${knowledge_count}</li>
 			</ul>
 			<ul class="admin_operate">
 				<li><a class="category_toggle"><i class="fa fa-folder"></i><span>展开</span></a></li>
-				<li><a class="category_edit"><i class="fa fa-pencil"></i>编辑</a></li>
-				<li><a class="category_delete"><i class="fa fa-minus"></i>删除</a></li>
+				{{if !is_default}}<li><a class="category_edit"><i class="fa fa-pencil"></i>编辑</a></li>
+				<li><a class="category_delete"><i class="fa fa-minus"></i>删除</a></li>{{/if}}
 			</ul>
 		</div>
 		<div class="category_desc">
@@ -240,6 +269,29 @@
 	<div class="no_data">
 		<i class="fa fa-frown-o"></i>
 		<p>暂时还没有分类信息！点击右上角 新增 按钮即可添加！</p>
+	</div>
+</script>
+
+
+<script id="tem-manage-template" type="text/template">
+	<div class="page_head">
+		<h2>模板管理</h2>
+		<ul class="admin_operate">
+		</ul>
+	</div>
+	<div id="tem_view">
+		<ul class="tem_list"></ul>
+	</div>
+</script>
+
+<script id="tem-item-template" type="text/template">
+	<div class="tem">
+		<div class="tem_display">
+			<h2>${name}</h2>
+			<ul class="admin_operate">
+				{{if !selected}}<li><a class="tem_toggle"><i class="fa fa-check-circle"></i><span>使用该模板</span></a></li>{{/if}}
+			</ul>
+		</div>
 	</div>
 </script>
 
@@ -353,7 +405,7 @@
 		        </ul>
 	        	<p>
 	        		<a class="submit" id='btn_edit_knowledge'>确认修改</a>
-	        		<a class="submit_pub" id='btn_publish_knowledge'>立即发布</a>
+	        		<a class="submit_pub" id='btn_edit_publish_knowledge'>立即发布</a>
 	        	</p>
 	       	</form>
 	 	</div>	

@@ -4,14 +4,22 @@ var sign = require('../controllers/sign');
 var user = require('../controllers/user');
 var category = require('../controllers/category');
 var todo = require('../controllers/todo');
+var config = require('../config');
 var knowledge = require('../controllers/knowledge');
+var template = require('../controllers/template');
 var router = express.Router();
 var auth = require('../middlewares/auth');
 
 
+var front_template_path = "templates/" + config.template;
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'SmileCMS' });
+  res.render(front_template_path + '/index', { 
+  	title: 'iBaike',
+  	user: req.session.user,
+  	superuser : req.session.superuser
+  });
 });
 
 /* category controller */
@@ -39,27 +47,27 @@ router.post('/admin/knowledge',auth.adminRequired,knowledge.create);
 router.put('/admin/knowledge/:id',auth.adminRequired,knowledge.update);
 router.delete('/admin/knowledge/:id',auth.adminRequired,knowledge.delete);
 
+/* template controller */
+
+router.get('/admin/template',auth.adminRequired,template.index);
+router.put('/admin/template/:id',auth.adminRequired,template.update);
+
 // sign controller
-// if (config.allow_sign_up) {
-//   router.get('/signup', sign.showSignup);  // 跳转到注册页面
-//   router.post('/signup', sign.signup);  // 提交注册信息
-// } else {
-//   router.get('/signup', configMiddleware.github, passport.authenticate('github'));  // 进行github验证
-// }
-// router.post('/signout', sign.signout);  // 登出
-// router.get('/signin', sign.showLogin);  // 进入登录页面
+router.post('/signup', sign.signup);  // 提交注册信息
+router.post('/signout',auth.userRequired,sign.signout);  // 登出
 router.post('/signin', sign.login);  // 登录校验
 
+//前端显示
+router.get('/category',category.index);
+
+// router.post('/category/sub', auth.userRequired, category.sub); // 关注某话题
+// router.post('/category/de_sub', auth.userRequired, category.de_sub); // 取消关注某话题
 
 /*router of admin*/
 router.get('/admin/login',admin.showLogin);
-router.post('/admin/loginout',auth.adminRequired,sign.signout);
+router.post('/admin/signout',auth.adminRequired,sign.signout);
 router.get('/admin',auth.adminRequired,admin.index);
+router.get('/admin/index',auth.adminRequired,admin.indexData);
 //router.get('/admin',admin.index);
-
-/*router of some test*/
-router.get('/poptest',function(req,res){
-	res.render('components/pop_demo');
-});
 
 module.exports = router;

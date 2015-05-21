@@ -13,8 +13,9 @@ var config = {
 
 	hostname: 'localhost',
 	//程序运行端口
-	port: 3333,
+	port: 8888,
 
+	template: "default",
 	session_secret: 'SmileCMS_own_secret', //密钥
 	auth_cookie_name: 'SmileCMS_own_secret',
 

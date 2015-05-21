@@ -61,9 +61,10 @@ exports.create = function(req, res, next){
 			res.send({
 				tips: {
 					title: "添加成功",
-					msg: "恭喜您，已经成功添加用户" + user.username
+					msg: "恭喜您，已经成功添加用户 " + user.username
 				},
 				action: "add",
+				parent: ".add_user",
 				user: user
 			});
 		})
@@ -112,7 +113,7 @@ exports.update = function(req, res, next){
 		}
 
 		User.update(id,nickname, username, email, signature,function(err,user){
-			console.log(err);
+			
 			if(err){
 				return next(err);
 			}
@@ -120,9 +121,10 @@ exports.update = function(req, res, next){
 			res.send({
 				tips: {
 					title: "修改成功",
-					msg: "您已经成功修改用户" + user.username
+					msg: "您已经成功修改用户 " + user.username
 				},
 				action: "update",
+				parent: ".edit_user",
 				user: user
 			});
 		})
@@ -142,7 +144,7 @@ exports.delete = function(req, res, next){
 			res.send({
 				tips: {
 					title: "删除成功",
-					msg: "您已经成功删除用户" + user.username
+					msg: "您已经成功删除用户 " + user.username
 				},
 				action: "delete",
 				user: user

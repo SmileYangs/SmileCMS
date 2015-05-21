@@ -105,6 +105,18 @@ exports.addKnowledge = function(id,callback){
   });
 }
 
+exports.addKnowledges = function(id,nums,callback){
+  Category.findOne({_id:id},function(err,category){
+    if(err){
+      return callback(err);
+    }
+
+    category.knowledge_count += nums;
+
+    category.save(callback);
+  });
+}
+
 exports.reduceKnowledge = function(id,callback){
   Category.findOne({_id:id},function(err,category){
     if(err){
