@@ -14,33 +14,34 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="username" class="col-sm-3 control-label">用户名</label>
+						<label for="username" class="col-sm-3 control-label"><span>*</span>用户名</label>
 						<div class="col-sm-7">
 							<input type="text" class="form-control" id="username" name="username" placeholder="用户名">
 							<p>您的账户名称，用来登陆和显示</p>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="email" class="col-sm-3 control-label">电子邮箱</label>
+						<label for="email" class="col-sm-3 control-label"><span>*</span>电子邮箱</label>
 						<div class="col-sm-7">
 							<input type="email" class="form-control" id="email" name="email" placeholder="电子邮箱">
-							<p>您的常用email</p>
+							<p>您的常用email,用来激活您的账号</p>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="password" class="col-sm-3 control-label">密码</label>
+						<label for="password" class="col-sm-3 control-label"><span>*</span>密码</label>
 						<div class="col-sm-7">
 							<input type="password" class="form-control" id="password" name="password" placeholder="您的登陆密码">
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="password-repeat" class="col-sm-3 control-label">确认密码</label>
+						<label for="password-repeat" class="col-sm-3 control-label"><span>*</span>确认密码</label>
 						<div class="col-sm-7">
 							<input type="password" class="form-control" id="password-repeat" name="password-repeat" placeholder="确认您的登陆密码">
 						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
+					<p class="toggleReAndLo">已有账号？<a href="#" data-dismiss="modal" data-toggle="modal" data-target="#loginModal">去登录</a></p>
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
 					<button type="submit" id="user-signup" class="btn btn-primary">立即注册</button>
 				</div>
@@ -57,7 +58,7 @@
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				<h4 class="modal-title" id="myModalLabel">用户登录</h4>
 			</div>
-			<form class="form-horizontal" id="login" role="form" method="post" action="/login">
+			<form class="form-horizontal" id="login" role="form">
 				<fieldset>
 				<div class="modal-body">
 					<div class="tip">
@@ -65,19 +66,20 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="username" class="col-sm-3 control-label">用户名</label>
+						<label for="username" class="col-sm-3 control-label"><span>*</span>用户名</label>
 						<div class="col-sm-7">
 							<input type="text" class="form-control" id="username" name="username" placeholder="用户名">
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="password" class="col-sm-3 control-label">密码</label>
+						<label for="password" class="col-sm-3 control-label"><span>*</span>密码</label>
 						<div class="col-sm-7">
 							<input type="password" class="form-control" id="password" name="password" placeholder="您的登陆密码">
 						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
+					<p class="toggleReAndLo">还没有账号？<a href="#" data-dismiss="modal" data-toggle="modal" data-target="#registerModal">去注册</a></p>
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
 					<button type="submit" id="user-signin" class="btn btn-primary">立即登录</button>
 				</div>
@@ -86,11 +88,152 @@
 		</div>
 	</div>
 </div>
+
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myModalLabel">修改个人资料</h4>
+			</div>
+			<form class="form-horizontal" id="update" role="form">
+				<fieldset>
+				<div class="modal-body">
+					<div class="tip">
+						<div class="alert alert-warning alert-dismissable error">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="email" class="col-sm-3 control-label"><span>*</span>电子邮箱</label>
+						<div class="col-sm-7">
+							<input type="email" class="form-control" id="email" name="email" placeholder="电子邮箱">
+							<p>您的常用email</p>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="nickname" class="col-sm-3 control-label">昵称</label>
+						<div class="col-sm-7">
+							<input type="text" class="form-control" id="nickname" name="nickname" placeholder="昵称">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="signature" class="col-sm-3 control-label">个性签名</label>
+						<div class="col-sm-7">
+							<input type="signature" class="form-control" id="signature" name="signature" placeholder="个性签名">
+							<p>设置您的个性签名</p>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					<button type="submit" id="user-update" class="btn btn-primary">立即修改</button>
+				</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</div>
+<div id="action-tips"></div>
+</script>
+
+<script id="modal-tips-template" type="text/template">
+	<div class="modal fade" id="tipModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">${title}</h4>
+				</div>
+				<div class="modal-body">
+					${msg}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal">我知道了</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </script>
 
 <script id="category-item-template" type="text/template">
-	<div class="category">
+	<div class="category" data-id="${id}">
 		<h2>${title}</h2>
 		<p>${description}</p>
+		<p class="user-action">
+			{{if !is_sub}}
+			<button type="button" id="doSUb" class="btn btn-primary"><i class="fa fa-plus"></i>订阅该分类</button>
+			{{else}}
+			<button type="button" class="btn btn-default" disabled="disabled">已订阅</button>
+			<button type="button" id="dodeSUb" class="btn btn-danger"><i class="fa fa-minus"></i>取消订阅</button>
+			{{/if}}
+		</p>
+	</div>
+</script>
+
+<script id="user-info-template" type="text/template">
+	{{if username}}<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+		{{if nickname}}${nickname}{{else}}${username}{{/if}}<b class="caret"></b></a>
+	{{else}}
+	<a href="#" title="登录" class="user-signin" data-toggle="modal" data-target="#loginModal"><i class="fa fa-user"></i></a>
+	{{/if}}
+	<ul class="dropdown-menu text-center">
+		<li><p class="signature">{{if signature}}${signature}{{else}}什么签名都没有(-｡-)..{{/if}}</p></li>
+		<li class="divider"></li>
+		<li><a data-toggle="modal" data-target="#updateModal">编辑个人资料</a></li>
+		{{if is_star}}
+		<li><a href="/admin" target="_blank">进入管理界面</a></li>
+		<li class="divider"></li>
+		{{/if}}
+		<li><a class="poweroff"><i class="fa fa-power-off"></i> 退出登录</a></li>
+		<li class="divider"></li>
+	</ul>
+</script>
+
+<script id="sub-item-template" type="text/template">
+	{{if has_sub}}
+		<h1>您已订阅以下分类</h1>
+		{{each(i,category) categorys}}
+		<div class="col-md-4 category-con">
+			<div class="category" data-id="${_id}">
+				<h2>${category.title}</h2>
+				<p>${category.description}</p>
+			</div>
+		</div>
+		{{/each}}
+	{{else}}
+		<div class="jumbotron">
+			<p>您还没有订阅任何分类</p>
+			<p class="action">
+			<a class="btn btn-primary btn-lg toSub" href="#sub" role="button">现在就去订阅</a>
+			</p>
+        </div>
+	{{/if}}
+</script>
+
+<script type="text/template" id="index-template">
+	<div id="index-con">
+	</div>
+	<div id="index-into">
+		<div class="col-md-4">
+			<h4>简洁</h4>
+			<p>简洁明了的用户界面，舒适清新的阅读环境，告别烦人的广告，摆脱繁琐的色彩，在这里享受静静的阅读时光</p>
+		</div>
+		<div class="col-md-4">
+			<h4>易用</h4>
+			<p>非常容易简单的操作，让您享受极致清爽的阅读体验，在这里没有复杂的操作，让您做回归最初的安静~</p>
+		</div>
+		<div class="col-md-4">
+			<h4>高效</h4>
+			<p>看到自己喜欢的分类了么？只需一键，点击订阅，当分类有更新时，将会第一时间以邮件的形式通知您，让您不错过任何一秒的精彩~</p>
+		</div>
+	</div>
+</script>
+
+<script id="hot-item-template" type="text/template">
+	<div class="knowledge" data-id="${id}">
+		<h2>${title}</h2>
+		<p>${description}</p>
+		<p class="knowledge-state">
+		</p>
 	</div>
 </script>

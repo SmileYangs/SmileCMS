@@ -2,27 +2,50 @@ var validator = require('validator');
 var eventproxy = require('eventproxy');
 var Knowledge = require('../proxy').Knowledge;
 var Category = require('../proxy').Category;
+var CategorySub = require('../proxy').CategorySub;
+var User = require('../proxy').User;
+var mail = require('../common/mail');
 var tools = require('../common/tools');
 var _ = require('lodash');
 
 
 exports.index = function(req, res, next){
+	var page = parseInt(req.query.page, 10) || 1;
+	page = page > 0 ? page : 1;
 
 	var ep = new eventproxy();
 
 	ep.fail(next);
 	var query = {};
 
-	Knowledge.getKnowledgesByQuery(query,{sort: '-create_at'},ep.done('knowledges',function(knowledges){
-		return knowledges;
-	}))
+	var limit = 10;
+	var options = { skip: (page - 1) * limit, limit: limit, sort: '-create_at'};
 
-	ep.all("knowledges",function(knowledges){
+	Knowledge.getKnowledgesByQuery(query,options,ep.done('knowledges',function(knowledges){
+		return knowledges;
+	}));
+
+	Knowledge.getCountByQuery(query, ep.done('pages',function (all_topics_count) {
+		var pages = Math.ceil(all_topics_count / limit);
+		return pages;
+	}));
+
+	ep.all("knowledges","pages",function(knowledges,pages){
 
 		res.send({
-			knowledges: knowledges
+			knowledges: knowledges,
+			page: page,
+			pages: pages
 		});
 	});
+};
+
+exports.categoryKnowledge = function(req,res,next){
+
+};
+
+exports.showKnowledge = function(req,res,next){
+
 };
 
 exports.create = function(req, res, next){
@@ -35,6 +58,8 @@ exports.create = function(req, res, next){
 
 	var ep = new eventproxy();
 	ep.fail(next);
+
+	// 添加邮件发送
 
 	Category.addKnowledge(category_id,ep.done('category_count_add',function(category){
 		return category;
@@ -49,6 +74,29 @@ exports.create = function(req, res, next){
 
 		knowledge.friendly_create_at = tools.formatDate(knowledge.create_at, true);
 		knowledge.category = category;
+
+		if(knowledge.publish){
+			// 查询订阅了该分类的所有用户
+			CategorySub.getCategorySubsByCategoryId(category._id,function(err,subs){
+				if(err){
+					next(err);
+				}
+
+				if(subs.length > 0){
+					var user_ids = _.pluck(subs,"user_id");
+					user_ids.forEach(function(id,i){
+						User.getUserById(id,function(err,user){{
+							if(err){
+								next(err);
+							}
+
+							mail.sendTipsMail(user.email,category.title,knowledge._id,user.username,knowledge.title);
+						}})
+					});
+				}
+
+			})
+		}
 
 		res.send({
 			tips: {
@@ -123,6 +171,27 @@ exports.update = function(req, res, next){
 				knowledge.friendly_create_at = tools.formatDate(knowledge.create_at, true);
 				knowledge.category = category;
 
+				if(knowledge.publish){
+					// 查询订阅了该分类的所有用户
+					CategorySub.getCategorySubsByCategoryId(category._id,function(err,subs){
+						if(err){
+							next(err);
+						}
+
+						if(subs.length > 0){
+							var user_ids = _.pluck(subs,"user_id");
+							user_ids.forEach(function(id,i){
+								User.getUserById(id,function(err,user){{
+									if(err){
+										next(err);
+									}
+
+									mail.sendTipsMail(user.email,category.title,knowledge._id,user.username,knowledge.title);
+								}})
+							});
+						}
+					})
+				}
 				res.send({
 					tips: {
 						title: "更新成功",

@@ -1,19 +1,61 @@
 $(function(){
 	var url = "http://localhost:8888/";
 
-
-
 	var IndexView = Backbone.View.extend({
+		el: "#index-con",
+		template: $("#sub-item-template").template(),
+		initialize: function(){
+			var self = this;
+			// 判断用户是否已经登录，登录后获取用户的订阅
+			if(User.isLogined(false)){
+				$.ajax({
+					url: url + "userCategory/" + User.get('_id'),
+					type: "get",
+					error: function(err){
+
+					},
+					success: function(res){
+						var data = {};
+
+						data.has_sub = res.subs.length ? true : false;
+						data.categorys = res.subs;
+
+						self.render(data);
+					}
+				})
+			}
+		},
+		render: function(data){
+			this.$el.html($.tmpl(this.template,data));
+		}
 	});
 
+	var IndexConView = Backbone.View.extend({
+		el: "#main-con",
+		template: $('#index-template').template(),
+		render: function(){
+			this.$el.html($.tmpl(this.template));
+		}
+	})
+
+	var HotView = Backbone.View.extend({
+		el: "#mail-con"
+	});
+	
 	/*
 	* 分类管理
 	*/
 	var CategoryModel = Backbone.Model.extend({
 		urlRoot: url + "category",
+		defaults: {
+			is_sub: false
+		},
 		parse: function(data){
 			data.id = data._id;
 			return data;
+		},
+		toggle: function(){
+			this.set({is_sub: !this.get("is_sub")});
 		}
 	});
 
@@ -34,6 +76,57 @@ $(function(){
     var CategoryView = Backbone.View.extend({
     	tagName: "div",
     	template: $("#category-item-template").template(),
+    	events: {
+    		"click #doSUb"	: "sub",
+    		"click #dodeSUb": "dodeSUb"
+    	},
+    	initialize: function(){
+    		this.model.bind("change",this.render,this);
+    	},
+    	sub: function(e){
+    		var self = this;
+    		e.preventDefault();
+    		var islogin = User.isLogined(true,false);
+
+    		if(islogin){
+    			var category_id = self.$('.category').attr('data-id');
+
+    			$.ajax({
+    				url: url+ "category/sub",
+    				type: "post",
+    				data: {
+    					category_id: category_id
+    				},
+    				error: function(err){
+
+    				},
+    				success: function(res){
+    					self.model.toggle();
+    				}
+    			})
+    		}
+    			
+    	},
+
+    	dodeSUb: function(e){
+    		var self = this;
+    		e.preventDefault();
+    		var category_id = self.$('.category').attr('data-id');
+
+    		$.ajax({
+    			url: url+ "category/de_sub",
+    			type: "post",
+    			data: {
+    				category_id: category_id
+    			},
+    			error: function(err){
+
+    			},
+    			success: function(res){
+    				self.model.toggle();
+    			}
+    		})
+    	},
 
     	render: function(){
     		this.$el.attr("class","col-md-4 category-con");
@@ -63,7 +156,6 @@ $(function(){
 		},
 
 		addAll: function(){
-			DialogState.exit();
 			this.$el.html("");
 			Categorys.each(this.addOne);
 		}
@@ -72,8 +164,36 @@ $(function(){
 	var UserModel = Backbone.Model.extend({
 		urlRoot: url,
 		defaults: {
+			user_id: null,
 			username: null,
 			password: null
+		},
+		isLogined: function(toggle,toRegister){
+			try{
+				if(!this.get('username'))
+					throw ('not Login');
+				else
+					return true;
+			}catch(e){
+				if(toggle){
+					if(!toRegister){
+						DialogState.login();
+					} else {
+						DialogState.register();
+					}
+				}
+				return false;
+			}
+		},
+
+		initialize: function(){
+			if(!this.get('newCheck')){
+				var user = $.cookie('user_info');
+				if(user){
+					var data = $.parseJSON(user);
+					this.set(data);
+				}
+			}
 		},
 
 		validate : function(attr,option){
@@ -115,81 +235,34 @@ $(function(){
 	// 状态机
 	var DialogState = StateMachine.create({
 		events: [
-			{name: "addCategory",from: "*",to: "*"},
-			{name: "editCategory",from: "*",to: "*"},
-			{name: "addUser",from: "*",to: "*"},
-			{name: "addKnowledge",from: "*",to: "*"},
-			{name: "editKnowledge",from: "*",to: "*"},
-			{name: "tips",from:"",to:""},
-			{name: "editUser",from: "*",to: "*"},
-			{name: "exit",from: "*",to: "*"}
+			{name: "login",from: "*",to: "*"},
+			{name: "register",from: "*",to: "*"},
+			{name: "hideUpdate",from: "*",to: "*"},
+			{name: "hideRegister",from: "*",to: "*"},
+			{name: "hideLogin",from: "*",to: "*"},
+			{name: "tips",from: "*",to: "*"}
 		],
 		callbacks:{
-			onaddCategory: function(){
-				$(".add_category .error").empty().hide();
-				$(".add_category input,.add_category textarea").val('');
-
-    			$(".add_category").center().show();
+			onlogin: function(){
+				$('#loginModal').modal('show');
 			},
-			oneditCategory: function(a,b,c,data){
-				$(".edit_category .error").empty().hide();
-				$(".edit_category").attr('data_id',data.id);
-				$("#edit_category_title").val(data.title);
-				$("#edit_category_desc").val(data.description);
-    			$(".edit_category").center().show();
+			onregister: function(){
+				$('#registerModal').modal('show');
 			},
-			onaddKnowledge: function(){
-				$(".add_knowledge .error").empty().hide();
-				$(".add_knowledge input").val('');
-    			$(".add_knowledge").center().show();
+			onhideUpdate: function(){
+				$('#updateModal').modal('hide');
 			},
-			oneditKnowledge: function(a,b,c,data){
-				$(".edit_knowledge .error").empty().hide();
-				$(".edit_knowledge").attr({
-					'data_id': data.id,
-					'data_publish': data.publish
-				});
-
-				$("#edit_category_select").val(data.category_id);
-				$("#edit_knowledge_title").val(data.title);
-				$("#edit_knowledge_content").val(data.content);
-
-    			$(".edit_knowledge").center().show();
+			onhideRegister: function(){
+				$('#registerModal').modal('hide');
 			},
-			onaddUser: function(){
-				$(".add_user .error").empty().hide();
-				$(".add_user input").val('');
-
-    			$(".add_user").center().show();
-			},
-			oneditUser: function(a,b,c,data){
-				$(".edit_user .error").empty().hide();
-				$(".edit_user").attr('data_id',data.id);
-				$("#edit_username").val(data.username);
-				$("#edit_user_email").val(data.email);
-				$("#edit_user_nick").val(data.nickname);
-				$("#edit_user_sign").val(data.signature);
-
-    			$(".edit_user").center().show();
+			onhideLogin: function(){
+				$('#loginModal').modal('hide');
 			},
 			ontips: function(a,b,c,data){
-				var template = $("#dialog-tips-template").template();
-				$(".action-tips").html($.tmpl(template,data)).center().show();
+				var template = $("#modal-tips-template").template();
+				$("#action-tips").html($.tmpl(template,data));
+				$('#tipModal').modal('show');
 			},
-			onexit: function(e){
-				$(".dialog_bg").hide();
-				$(".dialog").hide(function(){
-					$(this).find('input').val("");
-					$(this).find('textarea').val("");
-				});
-			},
-			onenter: function(){
-				$(".dialog_bg").show();
-			},
-    		onbefore: function(){
-    			$(".dialog_bg").hide();
-    			$(".dialog").hide();
-    		}
 		}
 	});
 
@@ -200,7 +273,9 @@ $(function(){
 			"click #user-signin"	: "signin",
 			"submit #login"			: "signin",
 			"click #user-signiup"	: "signup",
-			"submit #reg"			: "signup"		
+			"submit #reg"			: "signup",
+			"click #user-update"	: "update",
+			"submit #update"		: "update"		
 		},
 		signin: function(e){
 			e.preventDefault();
@@ -225,11 +300,18 @@ $(function(){
 				dataType: 'json',
 				error: function(err){
 					err = $.parseJSON(err.responseText);
-					$("#login .error").html(err.error).css({
-						display : "block"
-					});
+					if(err.tips){
+						DialogState.hideLogin();
+						DialogState.tips(err.tips);
+					} else {
+						
+						$("#login .error").html(err.error).css({
+							display : "block"
+						});
+					}		
 				},
 				success: function(res){
+					$.cookie('user_info', JSON.stringify(res.user), { expires: 30 });
 					window.location.href = '/';
 				}
 			});
@@ -265,14 +347,85 @@ $(function(){
 					});
 				},
 				success: function(res){
+					// $.cookie('user_info', JSON.stringify(res.user), { expires: 30 });
+					// window.location.href = '/';
+					DialogState.hideRegister();
+					DialogState.tips(res.tips);
+				}
+			});
+		},
 
-					window.location.href = '/';
+		update: function(e){
+			e.preventDefault();
+
+			var attr = {
+				nickname: $('#update #nickname').val(),
+				email: $('#update #email').val(),
+				signature: $('#update #signature').val(),
+				username: User.get('username'),
+				newCheck: true
+			}
+
+			console.log(attr);
+			var user = new UserModel(attr);
+			if(!user.isValid()){
+				console.log('aaa');
+				$("#update .error").html(user.validationError).css({
+					display : "block"
+				});
+				return false;
+			}
+
+			$.ajax({
+				type: "put",
+				url: url + "update/" + User.get('_id'),
+				data: attr,
+				dataType: 'json',
+				error: function(err){
+					err = $.parseJSON(err.responseText);
+					$("#update .error").html(err.msg).css({
+						display : "block"
+					});
+				},
+				success: function(res){
+					User.set(res.user);
+					DialogState.hideUpdate();
+					DialogState.tips(res.tips);	
+					$.cookie('user_info', JSON.stringify(res.user), { expires: 30 });
+					
 				}
 			});
 		},
 
 		render: function(){
 			this.$el.html($.tmpl(this.template));
+
+			if(User.get("username") != ""){
+				var user = User.toJSON();
+				$("#update #email").val(user.email);
+				$("#update #nickname").val(user.nickname);
+				$("#update #signature").val(user.signature);
+			}
+
+			$("#loginModal,#registerModal").on('show.bs.modal',function(e){
+				$(this).find(".error").css({
+					display : "none"
+				});
+				$(this).find("input").val('');
+			});
+
+			$("#updateModal").on('show.bs.modal',function(e){
+				$(this).find(".error").css({
+					display : "none"
+				});
+
+				if(User.get("username") != ""){
+					var user = User.toJSON();
+					$("#update #email").val(user.email);
+					$("#update #nickname").val(user.nickname);
+					$("#update #signature").val(user.signature);
+				}
+			});
 		},
 
 		initialize: function(){
@@ -280,201 +433,9 @@ $(function(){
 		}
 	})
 
-	// 对话框
-	var DialogView = Backbone.View.extend({
-		el: "#dialog-ph",
-		template: $("#dialog-template").template(),
-		events: {
-			"click .close"				: "close",
-			"click #btn_add_category"   : "addCategory",
-			"click #btn_edit_category"  : "editCategory",
-			"click #btn_add_user"   	: "addUser",
-			"click #btn_edit_user"   	: "editUser",
-			"click #btn_add_knowledge"	: "addKnowledge",
-			"click #btn_publish_knowledge" : "addKnowledge",
-			"click #btn_edit_knowledge"	: "editKnowledge",
-			"click #btn_edit_publish_knowledge" : "editKnowledge"
-		},
-		close: function(e){
-			e.preventDefault();
-			DialogState.exit();
-		},
-		render: function(){
-			this.$el.html($.tmpl(this.template));
-		},
-		addCategory: function(){
-			var attr = {
-				title: $.trim($("#category_title").val()),
-				description: $.trim($("#category_desc").val())
-			};
-
-			var category = new CategoryModel(attr);
-			if(!category.isValid()){
-				$(".add_category .error").html(category.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			Categorys.create(attr,{
-				wait: true
-			});
-		},
-
-		editCategory: function(){
-			var attr = {
-				title: $.trim($("#edit_category_title").val()),
-				description: $.trim($("#edit_category_desc").val())
-			}; 
-
-			var category = new CategoryModel(attr);
-			
-			if(!category.isValid()){
-				$(".edit_category .error").html(category.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			category = Categorys.get($(".edit_category").attr('data_id'));
-			category.save(attr,{
-				wait: true
-			});
-		},
-		addUser: function(){
-			var attr = {
-				username: $.trim($("#username").val()),
-				password: $.trim($("#user_pass").val()),
-				rep_pass: $.trim($("#user_pass_comfirm").val()),
-				email: $.trim($("#user_email").val()),
-				nickname: $.trim($("#user_nick").val()),
-				signature: $.trim($("#user_sign").val())
-			};
-
-			var user = new UserModel(attr);
-			if(!user.isValid()){
-				$(".add_user .error").html(user.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			Users.create(attr,{
-				wait:true
-			})
-		},
-
-		editUser: function(){
-			var attr = {
-				username: $.trim($("#edit_username").val()),
-				email: $.trim($("#edit_user_email").val()),
-				nickname: $.trim($("#edit_user_nick").val()),
-				signature: $.trim($("#edit_user_sign").val())
-			};
-
-			
-
-			var user = new UserModel(attr);
-
-			if(!user.isValid()){
-				$(".edit_user .error").html(user.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			user = Users.get($(".edit_user").attr('data_id'));
-
-			user.save(attr,{
-				wait: true
-			});
-
-		},
-
-		addKnowledge: function(e){
-			var action = $(e.currentTarget);
-
-			var attr = {
-				title: $.trim($("#knowledge_title").val()),
-				content: $.trim($("#knowledge_content").val()),
-				category_id: $.trim($("#add_category_select").val())
-			};
-
-			if(action.hasClass('submit_pub')){
-				attr.publish = true;
-			}
-
-			var knowledge = new KnowledgeModel(attr);
-
-			if(!knowledge.isValid()){
-				$(".add_knowledge .error").html(knowledge.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			Knowledges.create(attr,{
-				wait:true,
-				beforeSend: function(){
-					DialogState.tips({
-						title: "添加中...",
-						msg: "数据正在添加中",
-						action: "waiting",
-						canclose: false,
-						actionTips: ""
-					});
-				}
-			});	
-		},
-
-		editKnowledge: function(e){
-			var action = $(e.currentTarget);
-
-			var attr = {
-				title: $.trim($("#edit_knowledge_title").val()),
-				content: $.trim($("#edit_knowledge_content").val()),
-				category_id: $.trim($("#edit_category_select").val())
-			};
-
-			if(action.hasClass('submit_pub')){
-				attr.publish = true;
-			} else {
-				attr.publish = $(".edit_knowledge").attr('data_publish');
-			}
-
-			var knowledge = new KnowledgeModel(attr);
-
-			if(!knowledge.isValid()){
-				$(".add_knowledge .error").html(knowledge.validationError).css({
-					display : "block"
-				});
-				return false;
-			}
-
-			knowledge = Knowledges.get($(".edit_knowledge").attr('data_id'));
-
-			knowledge.save(attr,{
-				wait:true,
-				beforeSend: function(){
-					DialogState.tips({
-						title: "更新中...",
-						msg: "数据正在更新中",
-						action: "waiting",
-						canclose: false,
-						actionTips: ""
-					});
-				}
-			});
-		},
-
-		initialize: function(){
-			this.render();
-		}
-	});
-
 	var HeadView = Backbone.View.extend({
 		el: "#inews-nav",
-
+		template: $("#user-info-template").template(),
 		events: {
 			"click #headNav li"		: "toggleNav",
 			"click .poweroff"		: "loginOut"
@@ -485,12 +446,22 @@ $(function(){
 			ARouter.navigate(current,{trigger: true});
 		},
 
+		render: function(e){
+			this.$('.dropdown').html($.tmpl(this.template,User.toJSON()));
+		},
+
+		initialize: function(e){
+			User.bind('all',this.render,this);
+			this.render();
+		},
+
 		loginOut: function(e){
 			$.ajax({
 				url: url + 'signout',
 				type: "post",
 
 				success: function(){
+					$.removeCookie('user_info');
 					window.location.href = url;
 				}
 			})
@@ -506,15 +477,21 @@ $(function(){
 
 		initialize: function(){
 			window.Menu = new MenuModel();
+			window.User = new UserModel();
 			window.Categorys = new CategoryList();
 
 			new HeadView();
 			new ModelView();
+
+			this.indexControl = new IndexConView();
 		},
 
 		index: function(){
 			var self = this;
 			Menu.set({current: 'index'});
+			self.indexControl.render();
+
+			new IndexView();
 		},
 		hot: function()	{
 			Menu.set({current: 'hot'});
@@ -529,7 +506,6 @@ $(function(){
 	var ARouter = new FrontRouter();
 	Backbone.history.start({pushState: false});
 
-	// app¹ÜÀí
 	var app = {
 		start: function(){
 			ARouter.navigate('index',{trigger: true}); 

@@ -299,8 +299,10 @@ p {
 	 	margin: 5px 0;
 	 	padding-left: 5px;
 	 	max-width: 100%;
+		text-overflow: ellipsis;
 		box-sizing: border-box;
 		overflow: hidden;
+		white-space: nowrap;
 	}
 
 	.done {
@@ -396,12 +398,46 @@ p {
 		position: relative;
 		box-shadow: 0px 1px 5px solid @normal_color;
 		
-		#knowledge-stats {
+		#knowledge-pages {
 			display: inline-block;
 			font-size: 12px;
 			float: right;
 			margin: 0 10px;
 			padding-top: 20px;
+
+			a {
+				display: inline-block;
+				background: @active_color;
+				padding: 0px 5px;
+				text-align: center;
+				color: #fff;
+				.radius(5px);
+				font-size: 12px;
+			}
+
+			.pre_page {
+				background: #E2BC34;
+			}
+
+			.next_page {
+				background: #15C70D;
+			}
+
+			.first_page {
+				background: #2D37BC;
+			}
+
+			.last_page {
+				background: #2BA5BE;
+			}
+		}	
+
+		#knowledge-stats {
+			display: inline-block;
+			font-size: 12px;
+			margin: 0 10px;
+			padding-top: 20px;
+			float: right;
 
 			a {
 				display: inline-block;
@@ -768,7 +804,7 @@ p {
 				margin-top: 0px;
 			}
 			#todo-list li {
-				padding: 5px 20px 5px 0;
+				padding: 5px 0px 5px 0;
 				position: relative;
 				font-size: 12px;
 				line-height: 1.1em;
@@ -776,12 +812,23 @@ p {
 			}
 
 			#todo-list li .display {
+				padding-left: 16px;
+				position: relative;
+
 				.check {
 					margin-top: -5px;
+					left: 0;
+					position: absolute;
 				}
 
 				label {
 					font-size: 12px;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					text-align: left;
+					display: -webkit-box;
+					-webkit-line-clamp: 2;
+					-webkit-box-orient: vertical;
 				}
 			}
 			#todo-list li:after {
@@ -836,8 +883,8 @@ p {
 				cursor: pointer;
 				width: 20px;
 				height: 20px;
-				margin-top: -7px;
-				right: 0px;
+				margin-top: -5px;
+				right: -10px;
 			}
 			#todo-list li:hover .todo-destroy {
 				display: block;

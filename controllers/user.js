@@ -133,12 +133,18 @@ exports.update = function(req, res, next){
 	
 }
 
+
 exports.delete = function(req, res, next){
 	var id = req.params.id;
 	User.getUserById(id,function(err,user){
 		if(err){
 			return next(err);
 		}
+
+		/*
+		*  用户删除时，查找该用户已经订阅的所有分类，将它们的订阅数减1
+		*  删除订阅表中所有与该用户相关的订阅
+		*/
 
 		User.remove(id,function(){
 			res.send({

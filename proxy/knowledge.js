@@ -70,7 +70,6 @@ exports.getCountByQuery = function (query, callback) {
   Knowledge.count(query, callback);
 };
 
-
 exports.remove = function(id,callback){
 	Knowledge.remove({_id:id},callback);
 }

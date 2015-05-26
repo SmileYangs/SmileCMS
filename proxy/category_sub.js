@@ -8,6 +8,10 @@ exports.getCategorySubsByUserId = function (userId, callback) {
   CategorySub.find({user_id: userId}, callback);
 };
 
+exports.getCategorySubsByCategoryId = function (category_id, callback) {
+  CategorySub.find({category_id: category_id}, callback);
+};
+
 exports.newAndSave = function (userId, category_id, callback) {
   var category_sub = new CategorySub();
   category_sub.user_id = userId;

@@ -140,12 +140,27 @@
 		<ul class="admin_operate">
 			<li><a class="knowledge_add"><i class="fa fa-plus"></i>新增</a></li>
 		</ul>
+		<div id="knowledge-pages">
+		</div>
 		<div id="knowledge-stats">
 		</div>
+
 	</div>
 	<div id="knowledge_view">
 		<ul class="knowledge_list"></ul>
 	</div>
+</script>
+
+<script type="text/template" id="knowledge-pages-template">
+	{{if (page!=1)}}
+		<a class="first_page" data-page="1">首页</a>
+		<a class="pre_page" data-page="${page-1}">上一页</a>
+	{{/if}}
+	{{if (page != pages)}}
+		<a class="next_page" data-page="${page+1}">下一页</a>
+		<a class="last_page" data-page="${pages}">尾页</a>
+	{{/if}}
+	<span>共有${pages}页</span>
 </script>
 
 <script type="text/template" id="knowledge-status-template">
@@ -158,10 +173,7 @@
 		</span>
 	{{/if}}
 	{{if total}}
-		<span class="knowledge-count">
-			共有<span class="number">${total}</span>篇文章
-		</span>
-		<a class="select_all_knowledge">{{if selectedAll}}取消全选{{else}}选择全部{{/if}}</a>
+		<a class="select_all_knowledge">{{if selectedAll}}取消全选{{else}}选择本页全部{{/if}}</a>
 	{{/if}}
 </script>
 

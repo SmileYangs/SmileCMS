@@ -54,20 +54,24 @@ router.put('/admin/template/:id',auth.adminRequired,template.update);
 
 // sign controller
 router.post('/signup', sign.signup);  // 提交注册信息
-router.post('/signout',auth.userRequired,sign.signout);  // 登出
-router.post('/signin', sign.login);  // 登录校验
+router.post('/signout',sign.signout);  // 登出
+router.post('/signin', sign.userLogin);  // 登录校验
+router.get('/active_account',sign.active_account);
+router.put('/update/:id',auth.userRequired, user.update); 
 
 //前端显示
 router.get('/category',category.index);
+router.get('/userCategory/:id',category.userCategory),
+router.get('/category/knowledge/',knowledge.categoryKnowledge);
+router.get('/knowledge/:id', knowledge.showKnowledge);
 
-// router.post('/category/sub', auth.userRequired, category.sub); // 关注某话题
-// router.post('/category/de_sub', auth.userRequired, category.de_sub); // 取消关注某话题
+router.post('/category/sub', auth.userRequired, category.sub); // 关注某话题
+router.post('/category/de_sub', auth.userRequired, category.de_sub); // 取消关注某话题
 
 /*router of admin*/
 router.get('/admin/login',admin.showLogin);
 router.post('/admin/signout',auth.adminRequired,sign.signout);
 router.get('/admin',auth.adminRequired,admin.index);
 router.get('/admin/index',auth.adminRequired,admin.indexData);
-//router.get('/admin',admin.index);
 
 module.exports = router;

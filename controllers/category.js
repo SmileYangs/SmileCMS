@@ -15,29 +15,129 @@ exports.index = function(req, res, next) {
 		return categorys;
 	}));
 
-	if(req.session.user){
-		// 查询用户的订阅
-		CategorySub.getCategorySubsByUserId(req.session.user._id,function(err,docs){
-			console.log(docs);
-		})
-	} else {
+	var events = [];
 
+	if(req.session.user){
+		// 查询用户的订阅,在分类中生成是否已订阅
+		CategorySub.getCategorySubsByUserId(req.session.user._id,proxy.done('subs',function(docs){
+			return docs;
+		}));
+		events = ["categorys","subs"];
+	} else {
+		events = ["categorys"];
 	}
 
-	proxy.all("categorys",function(categorys){
+	proxy.assign(events,function(categorys,subs){
+
+		// 处理categorys,添加是否已订阅
+
+		var subs_ids = subs ? _.pluck(subs,'category_id') : [];
+		
+		categorys = _.map(categorys,function(category){
+			category = category.toObject();
+
+			category.is_sub = _.some(subs_ids,function(id){
+				return _.isEqual(id,category._id);
+			});
+
+			return category;
+		});
+
+		
 		res.send({
 			categorys: categorys
 		});
 	})
 };
 
+exports.userCategory = function(req,res,next){
+	var user_id = req.params.id;
+	var ep = new eventproxy();
+	ep.fail(next);
+
+	CategorySub.getCategorySubsByUserId(user_id,function(err,categorySubs){
+		
+		if (err) {
+			return next(err);
+		}
+
+		if (!categorySubs) {
+			return res.send({
+				subs: []
+			});
+		}
+
+		var category_ids = _.pluck(categorySubs,'category_id');
+
+		ep.after('category_ready',category_ids.length,function(categorys){
+			res.send({
+				subs: categorys
+			});
+		})
+
+		category_ids.forEach(function(id,i){
+			Category.getCategoryById(id,ep.group('category_ready',function(category){
+				return category;
+			}));
+		});
+	})
+
+};
+
 
 exports.sub = function(req,res,next){
-	
+	var category_id = req.body.category_id;
+
+	Category.getCategory(category_id, function (err, category) {
+		if (err) {
+			return next(err);
+		}
+		if (!category) {
+			res.json({status: 'failed'});
+		}
+
+		CategorySub.getCategorySub(req.session.user._id, category._id, function (err, doc) {
+			if (err) {
+			  return next(err);
+			}
+			if (doc) {
+			  res.json({status: 'success'});
+			  return;
+			}
+
+			CategorySub.newAndSave(req.session.user._id, category._id, function (err) {
+				if (err) {
+				return next(err);
+				}	
+				res.json({status: 'success'});
+			});
+			
+			category.sub_count += 1;
+			category.save();
+		});
+	});
 };
 
 exports.de_sub = function(req,res,next){
+	var category_id = req.body.category_id;
+	Category.getCategory(category_id, function (err, category) {
+		if (err) {
+			return next(err);
+		}
+		if (!category) {
+			res.json({status: 'failed'});
+		}
 
+		CategorySub.remove(req.session.user._id, category._id, function (err) {
+			if (err) {
+			  return next(err);
+			}
+			res.json({status: 'success'});
+		});
+
+		category.sub_count -= 1;
+		category.save();
+	});
 };
 
 /*创建一个新分类*/
@@ -120,6 +220,10 @@ exports.delete = function(req,res,next){
 			ep.emit('add',null);
 		}
 	});
+
+	/*
+	*  分类删除时，删除订阅表中所有与该分类相关的订阅
+	*/
 
 	ep.all('move','add',function(knowledges,uncategory){
 		Category.remove(id,ep.done('remove',function(category){

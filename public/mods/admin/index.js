@@ -668,12 +668,57 @@ $(function(){
 		model: KnowledgeModel,
 
 		parse: function(data){
-
+			this.originData = data;
 			return data.knowledges;
 		},
 
 		selected: function() {
 			return this.filter(function(knowledge){ return knowledge.get('selected'); });
+		}
+	});
+
+	var PageView = Backbone.View.extend({
+		el: "#knowledge-pages",
+		template:  $("#knowledge-pages-template").template(),
+
+		events: {
+			"click a": "pageToggle"
+		},
+
+		initialize: function(){
+			Knowledges.bind("reset",this.render,this);
+		},
+
+		pageToggle: function(e){
+			e.preventDefault();
+
+			var page = $(e.currentTarget).attr('data-page');
+
+			Knowledges.fetch({
+				reset: true,
+				data: {
+					page: page,
+				},
+				beforeSend: function(){
+					DialogState.tips({
+						title: "加载中...",
+						msg: "数据正在加载中",
+						action: "waiting",
+						canclose: false,
+						actionTips: ""
+					});
+				}
+			});
+		},
+
+		render: function(){
+			var data = {
+				page: Knowledges.originData.page,
+				pages: Knowledges.originData.pages
+			}
+			
+			this.$el.html($.tmpl(this.template,data));
+			ARouter.navigate('knowledge/'+data.page,{trigger: false});
 		}
 	});
 
@@ -726,6 +771,9 @@ $(function(){
 			
 			Knowledges.fetch({
 				reset: true,
+				data: {
+					page: 1,
+				},
 				beforeSend: function(){
 					DialogState.tips({
 						title: "加载中...",
@@ -737,7 +785,6 @@ $(function(){
 				}
 			});
 
-			// äÖÈ¾Ìí¼ÓÖªÊ¶Ä£°å
 			var template = $("#category-list-template").template(),
 				cats = '';
 			if(Categorys.length > 0){
@@ -766,7 +813,6 @@ $(function(){
 					}
 				})
 			}
-
 		},
 
 		render: function(){
@@ -846,7 +892,7 @@ $(function(){
 		initialize: function(){
 			this.on("change:current",function(model,current){
 				$('#admin_leftNav').find('a').removeClass('nav_active');
-				$('#admin_leftNav').find('a[data-nav='+current+']').addClass('nav_active');
+				$('#admin_leftNav').find("a[data-nav='"+current+"']").addClass('nav_active');
 			})
 		},
 
@@ -1229,7 +1275,7 @@ $(function(){
 	var AdminRouter = Backbone.Router.extend({
 		routes: {
 			"index" 			: "index",
-			"knowledge" 		: "knowledge",
+			"knowledge/:page" 	: "knowledge",
 			"category"  		: "category",
 			"user"				: "user",
 			"template"			: "template"
@@ -1266,12 +1312,13 @@ $(function(){
 			new TodoListView();
 		},
 
-		knowledge: function(){
+		knowledge: function(page){
 			var self = this;
-			Menu.set({current: 'knowledge'});
+			Menu.set({current: 'knowledge/1'});
 			self.knowledgeConControl.render();
 
 			new KnowledgeListView();
+			new PageView();
 		},
 
 		category: function(){
